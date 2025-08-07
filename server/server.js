@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://MV.vercel.app'
+  'https://mv.vercel.app'
 ];
 
 app.use(cors({
