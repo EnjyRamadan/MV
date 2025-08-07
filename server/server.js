@@ -11,21 +11,11 @@ app.get('/', (req, res) => {
   res.send('API is working!');
 });
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://mv.vercel.app'
-];
-
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: 'https://mv-livid-iota.vercel.app',
   credentials: true,
 }));
+
 
 app.use(express.json());
 
