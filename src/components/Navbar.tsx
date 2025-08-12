@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
@@ -12,12 +12,26 @@ import {
   ChevronDown,
   User,
 } from 'lucide-react';
+import { getDashboardForCurrentUser } from '../api/dashboardApi';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [availablePoints, setAvailablePoints] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchPoints = async () => {
+      try {
+        const dashboard = await getDashboardForCurrentUser();
+        setAvailablePoints(dashboard.availablePoints || 0);
+      } catch (err) {
+        console.error("Error fetching available points:", err);
+      }
+    };
+    fetchPoints();
+  }, []);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -78,7 +92,7 @@ const Navbar: React.FC = () => {
               <div className="flex items-center space-x-2 bg-blue-50 px-3 py-1 rounded-full">
                 <Coins className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-semibold text-blue-700">
-                  {user?.points}
+                  {availablePoints}
                 </span>
               </div>
               <div className="flex items-center space-x-2">

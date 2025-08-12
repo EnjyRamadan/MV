@@ -1,9 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useContacts } from '../contexts/ContactContext';
+import axios from 'axios';
 import { 
-  TrendingUp, 
   Users, 
   Upload, 
   Unlock,
@@ -12,18 +10,72 @@ import {
   Calendar,
   Award
 } from 'lucide-react';
+import { getDashboardForCurrentUser } from '../api/dashboardApi';
+
+interface User {
+  id: string;
+  name: string;
+}
+
+interface Contact {
+  id: string;
+  name: string;
+  jobTitle: string;
+  company: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  isUnlocked: boolean;
+}
+
+interface DashboardData {
+  availablePoints: number;
+  totalContacts: number;
+  unlockedProfiles: number;
+  myUploads: Contact[];
+  recentActivity: any[];
+}
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
-  const { contacts } = useContacts();
+  const [user, setUser] = useState<User | null>(null);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
 
-  const unlockedContacts = contacts.filter(c => c.isUnlocked);
-  const myUploads = contacts.filter(c => c.uploadedBy === user?.id);
+  useEffect(() => {
+  const fetchData = async () => {
+    try {
+      //  Get dashboard & user in one go
+      const dashboard = await getDashboardForCurrentUser();
+      setDashboardData(dashboard);
+
+      // Also set user from same API call
+      setUser({ id: dashboard.userId, name: dashboard.userName });
+
+      // Get contacts
+      // const contactsRes = await axios.get('/api/contacts');
+      // setContacts(Array.isArray(contactsRes.data) ? contactsRes.data : []);
+
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setContacts([]);
+    }
+  };
+
+  fetchData();
+}, []);
+
+
+  const unlockedContacts = Array.isArray(contacts)
+    ? contacts.filter(c => c.isUnlocked)
+    : [];
+
+  const myUploads = user && Array.isArray(contacts)
+    ? contacts.filter(c => c.uploadedBy === user.id)
+    : [];
 
   const stats = [
     {
       name: 'Available Points',
-      value: user?.points || 0,
+      value: dashboardData?.availablePoints ?? 0,
       icon: Award,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
@@ -73,7 +125,7 @@ const Dashboard: React.FC = () => {
       {/* Welcome Section */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back, {user?.name}!
+          Welcome back,
         </h1>
         <p className="text-gray-600">
           Here's what's happening with your contact network today.
@@ -157,7 +209,7 @@ const Dashboard: React.FC = () => {
                 </p>
               </div>
               <div className="text-xs text-gray-400">
-                {contact.uploadedAt.toLocaleDateString()}
+                {new Date(contact.uploadedAt).toLocaleDateString()}
               </div>
             </div>
           ))}

@@ -34,6 +34,7 @@ app.use(passport.session());
 
 // Routes
 app.use('/auth', require('./routes/auth'));
+app.use('/dashboard', require('./routes/dashboardRoutes'));
 
 
 // MongoDB connection
