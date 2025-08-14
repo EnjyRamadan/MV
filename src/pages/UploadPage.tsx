@@ -9,7 +9,7 @@ import { getDashboardForCurrentUser } from '../api/dashboardApi';
 const UploadPage: React.FC = () => {
   const { user } = useAuth();
   const { addContact } = useContacts();
-  const { dashboard, updatePoints } = useDashboard();
+  const { dashboard, refreshDashboard } = useDashboard();
 
   const [activeTab, setActiveTab] = useState<'single' | 'bulk'>('single');
 
@@ -59,14 +59,20 @@ const UploadPage: React.FC = () => {
     };
 
     try {
-      await addContact(contact);
+      // Upload contact - this now also updates dashboard points on backend
+      const res = await fetch('http://localhost:5000/profiles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contact)
+      });
 
-      // Optimistic points update
-      updatePoints(prev => prev + 10); // single upload
+      if (!res.ok) throw new Error('Failed to save contact');
+      const savedContact = await res.json();
 
-      // Final sync from backend
-      const freshDashboard = await getDashboardForCurrentUser();
-      updatePoints(freshDashboard.availablePoints);
+      // Update local contact state
+      // Note: You might want to modify your ContactContext to handle this
+      // For now, we'll just refresh the dashboard
+      await refreshDashboard();
 
       toast.success('Contact uploaded successfully! +10 points');
 
@@ -122,17 +128,23 @@ const UploadPage: React.FC = () => {
         return contact;
       });
 
-      // Upload all in parallel
-      await Promise.all(contacts.map((c) => addContact(c)));
+      // Use the bulk upload endpoint
+      const res = await fetch('http://localhost:5000/profiles/bulk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profiles: contacts,
+          uploadedBy: user.id
+        })
+      });
 
-      // Optimistic points update
-      const numContacts = contacts.length;
-      updatePoints((dashboard?.availablePoints || 0) + numContacts * 10);
+      if (!res.ok) throw new Error('Failed to bulk upload contacts');
+      const result = await res.json();
 
-      // Final sync from backend
-      const freshDashboard = await getDashboardForCurrentUser();
-      updatePoints(freshDashboard.availablePoints);
+      // Refresh dashboard to get updated points
+      await refreshDashboard();
 
+      const numContacts = result.count;
       toast.success(`${numContacts} contacts uploaded successfully! +${numContacts * 10} points`);
       setCsvData('');
     } catch (error) {
@@ -152,6 +164,11 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
         <p className="text-gray-600">
           Add new contacts to earn points and help grow the community database
         </p>
+        {dashboard && (
+          <div className="mt-4 inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+            Current Points: {dashboard.availablePoints}
+          </div>
+        )}
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -182,7 +199,6 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
 
         {activeTab === 'single' && (
           <form onSubmit={handleSingleUpload} className="p-6 space-y-6">
-            {/* --- your original single upload form content remains unchanged --- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
