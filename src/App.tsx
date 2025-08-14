@@ -2,6 +2,8 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ContactProvider } from "./contexts/ContactContext";
+import { DashboardProvider } from "./contexts/DashboardContext"; // <-- import DashboardProvider
+
 import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import SearchPage from "./pages/SearchPage";
@@ -13,7 +15,7 @@ import Navbar from "./components/Navbar";
 import GoogleSuccess from "./pages/GoogleSuccess";
 
 function AppRoutes() {
-  const { user } = useAuth(); 
+  const { user } = useAuth();
 
   return (
     <Routes>
@@ -75,11 +77,13 @@ function App() {
   return (
     <AuthProvider>
       <ContactProvider>
-        <Router>
-          <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-            <AppRoutes />
-          </div>
-        </Router>
+        <DashboardProvider> {/* Wrap DashboardProvider here */}
+          <Router>
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+              <AppRoutes />
+            </div>
+          </Router>
+        </DashboardProvider>
       </ContactProvider>
     </AuthProvider>
   );

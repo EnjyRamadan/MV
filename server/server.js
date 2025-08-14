@@ -36,6 +36,7 @@ app.use(passport.session());
 app.use('/auth', require('./routes/auth'));
 app.use('/dashboard', require('./routes/dashboardRoutes'));
 
+app.use('/profiles', require('./routes/profileRoutes'));
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URI)

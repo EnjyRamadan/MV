@@ -120,10 +120,6 @@ const ProfilePage: React.FC = () => {
                     <p className="font-medium text-gray-900">{contact.seniorityLevel}</p>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">Company Size</p>
-                    <p className="font-medium text-gray-900">{contact.companySize} employees</p>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg">
                     <p className="text-sm text-gray-600 mb-1">Experience</p>
                     <p className="font-medium text-gray-900">{contact.experience} years</p>
                   </div>
@@ -225,20 +221,6 @@ const ProfilePage: React.FC = () => {
                 )}
               </div>
 
-              {/* Upload Info */}
-              <div className="bg-blue-50 rounded-xl p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Upload Information
-                </h3>
-                <div className="space-y-2 text-sm">
-                  <p className="text-gray-600">
-                    <span className="font-medium">Uploaded:</span> {contact.uploadedAt.toLocaleDateString()}
-                  </p>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Contributor:</span> Community Member
-                  </p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
