@@ -35,10 +35,11 @@ router.post('/', async (req, res) => {
         {
           $inc: { 
             availablePoints: 10, // Add 10 points
-            totalContacts: 1     // Increment contact count
+            totalContacts: 1,    // Increment contact count
+            myUploads: 1         // Increment uploads counter
           },
           $push: { 
-            myUploads: profile._id.toString(),
+            uploadedProfileIds: profile._id.toString(),
             recentActivity: {
               $each: [`Uploaded contact: ${req.body.name || 'Unknown'}`],
               $slice: -10 // Keep only last 10 activities
@@ -84,10 +85,11 @@ router.post('/bulk', async (req, res) => {
         {
           $inc: { 
             availablePoints: pointsToAdd,
-            totalContacts: createdProfiles.length
+            totalContacts: createdProfiles.length,
+            myUploads: createdProfiles.length
           },
           $push: { 
-            myUploads: { $each: profileIds },
+            uploadedProfileIds: { $each: profileIds },
             recentActivity: {
               $each: activityMessages,
               $slice: -10

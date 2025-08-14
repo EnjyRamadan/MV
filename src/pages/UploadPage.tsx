@@ -69,11 +69,10 @@ const UploadPage: React.FC = () => {
       if (!res.ok) throw new Error('Failed to save contact');
       const savedContact = await res.json();
 
-      // Update local contact state
-      // Note: You might want to modify your ContactContext to handle this
-      // For now, we'll just refresh the dashboard
+      // Update local contact state and refresh dashboard
       await refreshDashboard();
 
+     
       toast.success('Contact uploaded successfully! +10 points');
 
       setFormData({
@@ -262,12 +261,13 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Industry
+                  Industry *
                 </label>
                 <select
                   name="industry"
                   value={formData.industry}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select industry</option>
@@ -282,13 +282,14 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Years of Experience
+                  Years of Experience *
                 </label>
                 <input
                   type="number"
                   name="experience"
                   value={formData.experience}
                   onChange={handleInputChange}
+                  required
                   min={0}
                   max={50}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -298,12 +299,13 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Seniority Level
+                  Seniority Level *
                 </label>
                 <select
                   name="seniorityLevel"
                   value={formData.seniorityLevel}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select level</option>
@@ -318,13 +320,14 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email
+                  Email *
                 </label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="contact@email.com"
                 />
@@ -332,13 +335,14 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone
+                  Phone *
                 </label>
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="+1-555-0123"
                 />
@@ -347,13 +351,14 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Skills (comma-separated)
+                Skills (comma-separated) *
               </label>
               <input
                 type="text"
                 name="skills"
                 value={formData.skills}
                 onChange={handleInputChange}
+                required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g. React, Node.js, Python, AWS"
               />
@@ -361,13 +366,14 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Education
+                Education *
               </label>
               <input
                 type="text"
                 name="education"
                 value={formData.education}
                 onChange={handleInputChange}
+                required
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g. BS Computer Science, Stanford University"
               />

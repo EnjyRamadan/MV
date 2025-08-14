@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import { useDashboard } from '../contexts/DashboardContext';
+import { useAuth } from '../contexts/AuthContext';
 import { 
   Users, 
   Upload, 
@@ -10,12 +11,6 @@ import {
   Calendar,
   Award
 } from 'lucide-react';
-import { getDashboardForCurrentUser } from '../api/dashboardApi';
-
-interface User {
-  id: string;
-  name: string;
-}
 
 interface Contact {
   id: string;
@@ -27,80 +22,57 @@ interface Contact {
   isUnlocked: boolean;
 }
 
-interface DashboardData {
-  availablePoints: number;
-  totalContacts: number;
-  unlockedProfiles: number;
-  myUploads: Contact[];
-  recentActivity: any[];
-}
-
 const Dashboard: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const { user } = useAuth();
+  const { dashboard, loading, error, refreshDashboard } = useDashboard();
+  const [recentUploads, setRecentUploads] = useState<Contact[]>([]);
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      //  Get dashboard & user in one go
-      const dashboard = await getDashboardForCurrentUser();
-      setDashboardData(dashboard);
+    // Fetch recent uploads from your uploaded profile IDs
+    const fetchRecentUploads = async () => {
+      if (dashboard?.uploadedProfileIds && dashboard.uploadedProfileIds.length > 0) {
+        try {
+          // Get the last 5 uploaded profiles
+          const recentIds = dashboard.uploadedProfileIds.slice(-5).reverse();
+          const uploadPromises = recentIds.map(id => 
+            fetch(`/api/profiles/${id}`).then(res => res.json())
+          );
+          const uploads = await Promise.all(uploadPromises);
+          setRecentUploads(uploads.filter(upload => upload != null));
+        } catch (err) {
+          console.error('Error fetching recent uploads:', err);
+        }
+      }
+    };
 
-      // Also set user from same API call
-      setUser({ id: dashboard.userId, name: dashboard.userName });
-
-      // Get contacts
-      // const contactsRes = await axios.get('/api/contacts');
-      // setContacts(Array.isArray(contactsRes.data) ? contactsRes.data : []);
-
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setContacts([]);
+    if (dashboard) {
+      fetchRecentUploads();
     }
-  };
-
-  fetchData();
-}, []);
-
-
-  const unlockedContacts = Array.isArray(contacts)
-    ? contacts.filter(c => c.isUnlocked)
-    : [];
-
-  const myUploads = user && Array.isArray(contacts)
-    ? contacts.filter(c => c.uploadedBy === user.id)
-    : [];
+  }, [dashboard]);
 
   const stats = [
     {
       name: 'Available Points',
-      value: dashboardData?.availablePoints ?? 0,
+      value: dashboard?.availablePoints ?? 0,
       icon: Award,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
     },
     {
-      name: 'Total Contacts',
-      value: contacts.length,
+      name: 'Total Uploads',
+      value: dashboard?.totalContacts ?? 0,
       icon: Users,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
       name: 'Unlocked Profiles',
-      value: unlockedContacts.length,
+      value: dashboard?.unlockedProfiles ?? 0,
       icon: Unlock,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
     },
-    {
-      name: 'My Uploads',
-      value: myUploads.length,
-      icon: Upload,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-    },
+    
   ];
 
   const quickActions = [
@@ -120,12 +92,49 @@ const Dashboard: React.FC = () => {
     },
   ];
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
+                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-600">Error loading dashboard: {error}</p>
+          <button 
+            onClick={refreshDashboard}
+            className="mt-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Welcome Section */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome back,
+          Welcome back, {user?.name || 'User'}!
         </h1>
         <p className="text-gray-600">
           Here's what's happening with your contact network today.
@@ -147,7 +156,7 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">{stat.name}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-2xl font-bold text-gray-900">{stat.value.toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -195,26 +204,27 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          {myUploads.slice(0, 5).map((contact) => (
-            <div key={contact.id} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <Upload className="w-5 h-5 text-green-600" />
+          {/* Show recent activity from dashboard context */}
+          {dashboard?.recentActivity && dashboard.recentActivity.length > 0 ? (
+            dashboard.recentActivity.slice(0, 5).map((activity, index) => (
+              <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                  <Upload className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {activity}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    +10 points earned
+                  </p>
+                </div>
+                <div className="text-xs text-gray-400">
+                  {dashboard.updatedAt ? new Date(dashboard.updatedAt).toLocaleDateString() : 'Recent'}
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">
-                  Uploaded {contact.name}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {contact.jobTitle} at {contact.company} • +10 points
-                </p>
-              </div>
-              <div className="text-xs text-gray-400">
-                {new Date(contact.uploadedAt).toLocaleDateString()}
-              </div>
-            </div>
-          ))}
-
-          {myUploads.length === 0 && (
+            ))
+          ) : (
             <div className="text-center py-8">
               <Upload className="w-12 h-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500 mb-4">No uploads yet</p>

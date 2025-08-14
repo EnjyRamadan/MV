@@ -5,7 +5,8 @@ const dashboardSchema = new mongoose.Schema({
   availablePoints: { type: Number, default: 100 },
   totalContacts: { type: Number, default: 0 },
   unlockedProfiles: { type: Number, default: 0 },
-  myUploads: { type: [String], default: [] },
+  myUploads: { type: Number, default: 0 }, // Changed to Number for counting uploads
+  uploadedProfileIds: { type: [String], default: [] }, // Array to store actual profile IDs
   recentActivity: { type: [String], default: [] },
   updatedAt: { type: Date, default: Date.now }
 });

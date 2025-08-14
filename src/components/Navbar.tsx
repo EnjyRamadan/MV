@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useDashboard } from '../contexts/DashboardContext';
 import {
   Users,
   Search,
@@ -12,26 +13,13 @@ import {
   ChevronDown,
   User,
 } from 'lucide-react';
-import { getDashboardForCurrentUser } from '../api/dashboardApi';
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
+  const { dashboard } = useDashboard(); // Use dashboard context instead of separate API call
   const location = useLocation();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [availablePoints, setAvailablePoints] = useState<number>(0);
-
-  useEffect(() => {
-    const fetchPoints = async () => {
-      try {
-        const dashboard = await getDashboardForCurrentUser();
-        setAvailablePoints(dashboard.availablePoints || 0);
-      } catch (err) {
-        console.error("Error fetching available points:", err);
-      }
-    };
-    fetchPoints();
-  }, []);
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -46,6 +34,9 @@ const Navbar: React.FC = () => {
     logout();
     navigate('/');
   };
+
+  // Get points from dashboard context - this will update automatically
+  const availablePoints = dashboard?.availablePoints || 0;
 
   return (
     <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
@@ -92,7 +83,7 @@ const Navbar: React.FC = () => {
               <div className="flex items-center space-x-2 bg-blue-50 px-3 py-1 rounded-full">
                 <Coins className="w-4 h-4 text-blue-600" />
                 <span className="text-sm font-semibold text-blue-700">
-                  {availablePoints}
+                  {availablePoints.toLocaleString()}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
@@ -119,6 +110,10 @@ const Navbar: React.FC = () => {
                   </p>
                   <p className="text-xs text-gray-500">{user?.email}</p>
                 </div>
+                
+                {/* Show additional dashboard info in dropdown */}
+                
+
                 <button
                   onClick={handleLogout}
                   className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"

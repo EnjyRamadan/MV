@@ -9,7 +9,8 @@ interface DashboardData {
   availablePoints: number;
   totalContacts?: number;
   unlockedProfiles?: number;
-  myUploads?: string[];
+  myUploads?: number; // Changed to number for upload count
+  uploadedProfileIds?: string[]; // Array of profile IDs
   recentActivity?: string[];
   updatedAt?: Date;
   // add other dashboard-related fields if needed
