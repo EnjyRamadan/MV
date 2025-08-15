@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useDashboard } from '../contexts/DashboardContext';
 import { useContacts, Contact } from '../contexts/ContactContext';
 import { 
   MapPin, 
@@ -11,7 +12,9 @@ import {
   Award,
   Mail,
   Phone,
-  User
+  User,
+  Lock,
+  AlertCircle
 } from 'lucide-react';
 
 interface ContactCardProps {
@@ -19,17 +22,54 @@ interface ContactCardProps {
 }
 
 const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
-  const { user, updatePoints } = useAuth();
+  const { user } = useAuth();
+  const { dashboard, updatePoints } = useDashboard();
   const { unlockContact } = useContacts();
 
-  const handleUnlock = () => {
-    if (user && user.points >= 20) {
-      unlockContact(contact.id);
-      updatePoints(user.points - 20);
-    }
-  };
+  // Get points from dashboard context instead of user
+  const availablePoints = dashboard?.availablePoints || 0;
+  const canUnlock = availablePoints >= 20 && !contact.isUnlocked;
+  const hasInsufficientPoints = availablePoints < 20 && !contact.isUnlocked;
 
-  const canUnlock = user && user.points >= 20 && !contact.isUnlocked;
+  const handleUnlock = async () => {
+    if (!canUnlock) return;
+    
+    try {
+      // Call backend API to unlock profile and deduct points
+      const response = await fetch(`http://localhost:5000/profiles/${contact.id}/unlock`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user?.id || dashboard?.userId, // Send user ID
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to unlock contact');
+      }
+
+      const result = await response.json();
+      
+      // Update local state with the response
+      updatePoints(result.remainingPoints);
+      unlockContact(contact.id);
+      
+      console.log('Contact unlocked successfully:', result);
+      
+    } catch (error) {
+  if (error instanceof Error) {
+    console.error('Error unlocking contact:', error);
+    alert(`Failed to unlock contact: ${error.message}`);
+  } else {
+    console.error('Unknown error unlocking contact:', error);
+    alert('Failed to unlock contact: Unknown error');
+  }
+}
+
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
@@ -94,33 +134,74 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
 
         {/* Contact Info - Locked/Unlocked */}
         {contact.isUnlocked ? (
-          <div className="space-y-2 mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
-            <div className="flex items-center space-x-2 text-green-700">
-              <Unlock className="w-4 h-4" />
-              <span className="text-sm font-medium">Contact Details Unlocked</span>
+          <div className="space-y-2 mb-4 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center space-x-2 text-green-700 mb-3">
+              <Unlock className="w-5 h-5" />
+              <span className="text-sm font-semibold">Contact Details Unlocked</span>
             </div>
             {contact.email && (
               <div className="flex items-center space-x-2 text-gray-700">
-                <Mail className="w-4 h-4" />
-                <span className="text-sm">{contact.email}</span>
+                <Mail className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium">{contact.email}</span>
               </div>
             )}
             {contact.phone && (
               <div className="flex items-center space-x-2 text-gray-700">
-                <Phone className="w-4 h-4" />
-                <span className="text-sm">{contact.phone}</span>
+                <Phone className="w-4 h-4 text-gray-500" />
+                <span className="text-sm font-medium">{contact.phone}</span>
+              </div>
+            )}
+            {!contact.email && !contact.phone && (
+              <div className="text-sm text-gray-500 italic">
+                No contact information available
               </div>
             )}
           </div>
         ) : (
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 mb-4">
-            <div className="flex items-center space-x-2 text-gray-500 mb-2">
-              <Mail className="w-4 h-4" />
-              <span className="text-sm">Contact details hidden</span>
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+            <div className="flex items-center justify-center space-x-2 text-gray-500 mb-3">
+              <Lock className="w-5 h-5" />
+              <span className="text-sm font-medium">Contact Information Locked</span>
             </div>
-            <p className="text-xs text-gray-500">
+            
+            {/* Points Status */}
+            <div className="text-center mb-3">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <Award className="w-4 h-4 text-purple-600" />
+                <span className="text-sm text-gray-600">
+                  Your Points: <span className="font-semibold text-purple-600">{availablePoints}</span>
+                </span>
+              </div>
+              
+              {hasInsufficientPoints && (
+                <div className="flex items-center justify-center space-x-1 text-red-500 mb-2">
+                  <AlertCircle className="w-4 h-4" />
+                  <span className="text-xs">Insufficient points to unlock</span>
+                </div>
+              )}
+            </div>
+
+            <p className="text-sm text-gray-600 text-center mb-4">
               Unlock to view email and phone number
             </p>
+
+            <button
+              onClick={handleUnlock}
+              disabled={!canUnlock}
+              className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
+                canUnlock
+                  ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 shadow-md hover:shadow-lg transform hover:scale-105'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <Award className="w-4 h-4" />
+              <span>
+                {hasInsufficientPoints 
+                  ? `Need ${20 - availablePoints} more points`
+                  : 'Unlock for 20 Points'
+                }
+              </span>
+            </button>
           </div>
         )}
       </div>
@@ -139,14 +220,19 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
           <button
             onClick={handleUnlock}
             disabled={!canUnlock}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all flex items-center justify-center space-x-2 ${
+            className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
               canUnlock
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700'
+                ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 shadow-md hover:shadow-lg transform hover:scale-105'
                 : 'bg-gray-200 text-gray-500 cursor-not-allowed'
             }`}
           >
             <Award className="w-4 h-4" />
-            <span>Unlock (20 pts)</span>
+            <span>
+              {hasInsufficientPoints 
+                ? 'Insufficient Points'
+                : 'Unlock (20 pts)'
+              }
+            </span>
           </button>
         )}
       </div>

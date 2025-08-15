@@ -47,6 +47,33 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({
     handleFilterChange('skills', skills);
   };
 
+  const handleExperienceChange = (type: 'min' | 'max', value: string) => {
+    const numValue = parseInt(value);
+    if (isNaN(numValue)) {
+      // If value is empty or invalid, remove the experience filter
+      const newExp = { ...filters.experience };
+      if (type === 'min') {
+        delete newExp?.min;
+      } else {
+        delete newExp?.max;
+      }
+      
+      // If both min and max are undefined, remove experience filter entirely
+      if (!newExp?.min && !newExp?.max) {
+        const newFilters = { ...filters };
+        delete newFilters.experience;
+        setFilters(newFilters);
+      } else {
+        handleFilterChange('experience', newExp);
+      }
+    } else {
+      handleFilterChange('experience', {
+        ...filters.experience,
+        [type]: numValue,
+      });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch(filters);
@@ -162,7 +189,13 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({
             Verification Status
           </label>
           <select
-            value={filters.verified ?? ''}
+            value={
+              filters.verified === undefined 
+                ? '' 
+                : filters.verified 
+                  ? 'true' 
+                  : 'false'
+            }
             onChange={(e) => {
               const val = e.target.value;
               handleFilterChange(
@@ -184,7 +217,13 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({
             Has Contact Info
           </label>
           <select
-            value={filters.hasContactInfo ?? ''}
+            value={
+              filters.hasContactInfo === undefined 
+                ? '' 
+                : filters.hasContactInfo 
+                  ? 'true' 
+                  : 'false'
+            }
             onChange={(e) => {
               const val = e.target.value;
               handleFilterChange(
@@ -210,12 +249,7 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({
               type="number"
               placeholder="Min"
               value={filters.experience?.min || ''}
-              onChange={(e) =>
-                handleFilterChange('experience', {
-                  ...filters.experience,
-                  min: parseInt(e.target.value) || 0,
-                })
-              }
+              onChange={(e) => handleExperienceChange('min', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <span className="text-gray-500">to</span>
@@ -223,12 +257,7 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({
               type="number"
               placeholder="Max"
               value={filters.experience?.max || ''}
-              onChange={(e) =>
-                handleFilterChange('experience', {
-                  ...filters.experience,
-                  max: parseInt(e.target.value) || 50,
-                })
-              }
+              onChange={(e) => handleExperienceChange('max', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <span className="text-gray-500 text-sm">years</span>

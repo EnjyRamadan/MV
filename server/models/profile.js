@@ -14,7 +14,7 @@ const profileSchema = new mongoose.Schema(
     email: String,
     phone: String,
     avatar: String,
-    isUnlocked: { type: Boolean, default: false },
+    // Remove global isUnlocked - now tracked per user in Dashboard
     uploadedBy: String,
   },
   { timestamps: { createdAt: 'uploadedAt', updatedAt: 'updatedAt' } }
