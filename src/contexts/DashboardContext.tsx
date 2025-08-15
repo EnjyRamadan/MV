@@ -11,6 +11,7 @@ interface DashboardData {
   unlockedProfiles?: number;
   myUploads?: number; // Changed to number for upload count
   uploadedProfileIds?: string[]; // Array of profile IDs
+  unlockedContactIds?: string[]; // Array of unlocked contact IDs
   recentActivity?: string[];
   updatedAt?: Date;
   // add other dashboard-related fields if needed
@@ -39,14 +40,23 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
         // If there's no dashboard yet, start from 0
         const initialPoints =
           typeof pointsUpdater === 'function' ? pointsUpdater(0) : pointsUpdater;
-        return { availablePoints: initialPoints };
+        return { 
+          availablePoints: initialPoints,
+          totalContacts: 0,
+          unlockedProfiles: 0,
+          myUploads: 0,
+          uploadedProfileIds: [],
+          unlockedContactIds: [],
+          recentActivity: []
+        };
       }
       return {
         ...prev,
         availablePoints:
           typeof pointsUpdater === 'function'
             ? pointsUpdater(prev.availablePoints)
-            : pointsUpdater
+            : pointsUpdater,
+        updatedAt: new Date()
       };
     });
   };
@@ -62,10 +72,40 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       const updatedDashboard = await getDashboardForCurrentUser();
-      setDashboard(updatedDashboard);
+      
+      // Ensure all required fields are present with defaults
+      const normalizedDashboard: DashboardData = {
+        ...updatedDashboard,
+        availablePoints: updatedDashboard.availablePoints || 0,
+        totalContacts: updatedDashboard.totalContacts || 0,
+        unlockedProfiles: updatedDashboard.unlockedProfiles || 0,
+        myUploads: updatedDashboard.myUploads || 0,
+        uploadedProfileIds: updatedDashboard.uploadedProfileIds || [],
+        unlockedContactIds: updatedDashboard.unlockedContactIds || [],
+        recentActivity: Array.isArray(updatedDashboard.recentActivity) 
+          ? updatedDashboard.recentActivity 
+          : [],
+        updatedAt: updatedDashboard.updatedAt || new Date()
+      };
+      
+      setDashboard(normalizedDashboard);
+      console.log('Dashboard refreshed successfully:', normalizedDashboard);
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
-      setError('Failed to refresh dashboard');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to refresh dashboard';
+      setError(errorMessage);
+      
+      // Set a minimal dashboard to prevent crashes
+      setDashboard({
+        availablePoints: 0,
+        totalContacts: 0,
+        unlockedProfiles: 0,
+        myUploads: 0,
+        uploadedProfileIds: [],
+        unlockedContactIds: [],
+        recentActivity: [],
+        updatedAt: new Date()
+      });
     } finally {
       setLoading(false);
     }
