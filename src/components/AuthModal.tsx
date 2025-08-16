@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { X, Chrome, Mail, Lock, User } from 'lucide-react';
+import { X, Mail, Lock, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface AuthModalProps {
@@ -14,7 +14,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSwitchMode }) =>
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, register, loginWithGoogle } = useAuth();
+  const { login, register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,20 +32,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSwitchMode }) =>
     } catch (error: any) {
       console.error('Auth error:', error);
       toast.error(error?.message || 'Authentication failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      await loginWithGoogle();
-      toast.success('Signed in with Google!');
-      onClose();
-    } catch (error: any) {
-      console.error('Google login error:', error);
-      toast.error(error?.message || 'Google login failed');
     } finally {
       setLoading(false);
     }
@@ -73,24 +59,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ mode, onClose, onSwitchMode }) =>
               ? 'Sign in to access your dashboard'
               : 'Join thousands of professionals'}
           </p>
-        </div>
-
-        <button
-          onClick={handleGoogleLogin}
-          disabled={loading}
-          className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center space-x-2 mb-6"
-        >
-          <Chrome className="w-5 h-5" />
-          <span>Continue with Google</span>
-        </button>
-
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">Or continue with email</span>
-          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
