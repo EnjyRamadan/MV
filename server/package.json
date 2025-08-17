@@ -53,10 +53,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/your-repo-name.git"
+    "url": "https://github.com/EnjyRamadan/MV"
   },
   "bugs": {
-    "url": "https://github.com/yourusername/your-repo-name/issues"
+    "url": "https://github.com/EnjyRamadan/MV/issues"
   },
-  "homepage": "https://github.com/yourusername/your-repo-name#readme"
+  "homepage": "https://github.com/EnjyRamadan/MV#readme"
 }
