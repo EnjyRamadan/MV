@@ -121,8 +121,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use('*', (req, res) => {
+// 404 handler - FIXED for Express 5.x compatibility
+// Changed from '*' to '/:catchAll*' to provide a parameter name
+app.use('/:catchAll*', (req, res) => {
   console.log(`404 - Route not found: ${req.method} ${req.originalUrl}`);
   res.status(404).json({ 
     message: 'Route not found',
@@ -147,19 +148,19 @@ const connectDB = async () => {
     };
 
     await mongoose.connect(process.env.MONGO_URI, options);
-    console.log(' Connected to MongoDB');
+    console.log('✅ Connected to MongoDB');
     
     // Handle connection events
     mongoose.connection.on('error', (err) => {
-      console.error(' MongoDB connection error:', err);
+      console.error('❌ MongoDB connection error:', err);
     });
     
     mongoose.connection.on('disconnected', () => {
-      console.warn(' MongoDB disconnected');
+      console.warn('⚠️ MongoDB disconnected');
     });
 
   } catch (error) {
-    console.error(' MongoDB connection failed:', error.message);
+    console.error('❌ MongoDB connection failed:', error.message);
     
     // Don't exit in production to allow container restart
     if (!isProduction) {
@@ -173,7 +174,7 @@ const connectDB = async () => {
 
 // Graceful shutdown handling
 const gracefulShutdown = () => {
-  console.log(' Received shutdown signal, closing server gracefully...');
+  console.log('🛑 Received shutdown signal, closing server gracefully...');
   
   mongoose.connection.close(() => {
     console.log('📦 MongoDB connection closed');
@@ -196,14 +197,14 @@ const startServer = async () => {
       
       server.on('error', (err) => {
         if (err.code === 'EADDRINUSE') {
-          console.error(` Port ${PORT} is already in use`);
+          console.error(`❌ Port ${PORT} is already in use`);
           process.exit(1);
         }
         throw err;
       });
     }
   } catch (error) {
-    console.error(' Failed to start server:', error);
+    console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 };
