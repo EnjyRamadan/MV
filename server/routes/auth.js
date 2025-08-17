@@ -11,7 +11,7 @@ const router = express.Router();
 const getRedirectURL = (path) => {
   const baseURL = process.env.NODE_ENV === 'production' 
     ? process.env.FRONTEND_URL 
-    : 'https://contactpro-hrmanager.vercel.app/';
+    : 'https://contactpro-hrmanager.vercel.app';
   return `${baseURL}${path}`;
 };
 
