@@ -9,7 +9,7 @@ const path = require('path');
 dotenv.config();
 require('./models/passport'); 
 
-const app = express();
+const app = express(); 
 const PORT = process.env.PORT || 5000;
 
 // Environment configuration
