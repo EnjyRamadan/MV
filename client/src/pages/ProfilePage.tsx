@@ -46,8 +46,8 @@ const ProfilePage: React.FC = () => {
         setError(null);
         
         const url = user?.id 
-          ? `http://localhost:5000/profiles/${id}?userId=${user.id}`
-          : `http://localhost:5000/profiles/${id}`;
+          ? `https://contactpro-backend.vercel.app/profiles/${id}?userId=${user.id}`
+          : `https://contactpro-backend.vercel.app/profiles/${id}`;
           
         const response = await fetch(url);
         
@@ -96,7 +96,7 @@ const ProfilePage: React.FC = () => {
       setUnlocking(true);
       
       // Call backend API to unlock profile and deduct points
-      const response = await fetch(`http://localhost:5000/profiles/${contact.id}/unlock`, {
+      const response = await fetch(`https://contactpro-backend.vercel.app/profiles/${contact.id}/unlock`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

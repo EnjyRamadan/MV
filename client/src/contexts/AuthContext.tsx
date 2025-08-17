@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const res = await fetch('http://localhost:5000/auth/login', {
+    const res = await fetch('https://contactpro-backend.vercel.app/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
@@ -74,7 +74,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const register = async (email: string, password: string, name: string) => {
-    const res = await fetch('http://localhost:5000/auth/signup', {
+    const res = await fetch('https://contactpro-backend.vercel.app/auth/signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password }),
@@ -101,7 +101,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
-    window.location.href = "http://localhost:5000/auth/google";
+    window.location.href = "https://contactpro-backend.vercel.app/auth/google";
   };
 
   const logout = () => {

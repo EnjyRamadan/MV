@@ -60,7 +60,7 @@ const UploadPage: React.FC = () => {
 
     try {
       // Upload contact - this now also updates dashboard points on backend
-      const res = await fetch('http://localhost:5000/profiles', {
+      const res = await fetch('https://contactpro-backend.vercel.app/profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contact)
@@ -128,7 +128,7 @@ const UploadPage: React.FC = () => {
       });
 
       // Use the bulk upload endpoint
-      const res = await fetch('http://localhost:5000/profiles/bulk', {
+      const res = await fetch('https://contactpro-backend.vercel.app/profiles/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

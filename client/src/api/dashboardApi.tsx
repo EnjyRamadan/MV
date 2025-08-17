@@ -20,7 +20,7 @@ export const getDashboardForCurrentUser = async (): Promise<DashboardData> => {
     }
 
     // First, get the current user to get their ID
-    const userResponse = await fetch('http://localhost:5000/auth/me', {
+    const userResponse = await fetch('https://contactpro-backend.vercel.app/auth/me', {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -33,7 +33,7 @@ export const getDashboardForCurrentUser = async (): Promise<DashboardData> => {
     const user = await userResponse.json();
     
     // Then get the dashboard data
-    const dashboardResponse = await fetch(`http://localhost:5000/dashboard/${user._id}`, {
+    const dashboardResponse = await fetch(`https://contactpro-backend.vercel.app/dashboard/${user._id}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -70,7 +70,7 @@ export const updateDashboard = async (userId: string, updateData: Partial<Dashbo
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`http://localhost:5000/dashboard/${userId}`, {
+    const response = await fetch(`https://contactpro-backend.vercel.app/dashboard/${userId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

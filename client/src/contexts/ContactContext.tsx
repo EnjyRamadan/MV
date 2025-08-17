@@ -92,8 +92,8 @@ export const ContactProvider: React.FC<ContactProviderProps> = ({
       
       // Build URL with userId if available
       const url = user?.id 
-        ? `http://localhost:5000/profiles?userId=${user.id}`
-        : 'http://localhost:5000/profiles';
+        ? `https://contactpro-backend.vercel.app/profiles?userId=${user.id}`
+        : 'https://contactpro-backend.vercel.app/profiles';
       
       const res = await fetch(url);
       
@@ -250,7 +250,7 @@ export const ContactProvider: React.FC<ContactProviderProps> = ({
     contactData: Omit<Contact, 'id' | 'uploadedAt' | 'isUnlocked'>
   ) => {
     try {
-      const res = await fetch('http://localhost:5000/profiles', {
+      const res = await fetch('https://contactpro-backend.vercel.app/profiles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

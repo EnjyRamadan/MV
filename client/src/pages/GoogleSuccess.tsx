@@ -13,7 +13,7 @@ const GoogleSuccess = () => {
     if (token) {
       localStorage.setItem("token", token);
 
-      fetch("http://localhost:5000/auth/me", {
+      fetch("https://contactpro-backend.vercel.app/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       })
         .then(res => res.json())
