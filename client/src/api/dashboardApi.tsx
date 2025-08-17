@@ -12,6 +12,8 @@ interface DashboardData {
   updatedAt?: Date;
 }
 
+const API_BASE_URL = 'https://contactpro-backend.vercel.app';
+
 export const getDashboardForCurrentUser = async (): Promise<DashboardData> => {
   try {
     const token = localStorage.getItem('token');
@@ -19,28 +21,26 @@ export const getDashboardForCurrentUser = async (): Promise<DashboardData> => {
       throw new Error('No authentication token found');
     }
 
-    // First, get the current user to get their ID
-    const userResponse = await fetch('https://contactpro-backend.vercel.app/auth/me', {
+    // Now we can directly get dashboard data with authentication
+    // The server gets userId from the JWT token, no need to call /auth/me first
+    const dashboardResponse = await fetch(`${API_BASE_URL}/api/dashboard`, {
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
     });
 
-    if (!userResponse.ok) {
-      throw new Error('Failed to get user information');
+    if (dashboardResponse.status === 401) {
+      // Token expired or invalid - clear and redirect to login
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      throw new Error('Authentication expired');
     }
 
-    const user = await userResponse.json();
-    
-    // Then get the dashboard data
-    const dashboardResponse = await fetch(`https://contactpro-backend.vercel.app/dashboard/${user._id}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
     if (!dashboardResponse.ok) {
-      throw new Error('Failed to fetch dashboard data');
+      const errorData = await dashboardResponse.text();
+      throw new Error(`Failed to fetch dashboard data: ${errorData}`);
     }
 
     const dashboardData = await dashboardResponse.json();
@@ -63,14 +63,15 @@ export const getDashboardForCurrentUser = async (): Promise<DashboardData> => {
   }
 };
 
-export const updateDashboard = async (userId: string, updateData: Partial<DashboardData>): Promise<DashboardData> => {
+export const updateDashboard = async (updateData: Partial<DashboardData>): Promise<DashboardData> => {
   try {
     const token = localStorage.getItem('token');
     if (!token) {
       throw new Error('No authentication token found');
     }
 
-    const response = await fetch(`https://contactpro-backend.vercel.app/dashboard/${userId}`, {
+    // No need to pass userId - server gets it from token
+    const response = await fetch(`${API_BASE_URL}/api/dashboard`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -79,13 +80,122 @@ export const updateDashboard = async (userId: string, updateData: Partial<Dashbo
       body: JSON.stringify(updateData)
     });
 
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      throw new Error('Authentication expired');
+    }
+
     if (!response.ok) {
-      throw new Error('Failed to update dashboard');
+      const errorData = await response.text();
+      throw new Error(`Failed to update dashboard: ${errorData}`);
     }
 
     return await response.json();
   } catch (error) {
     console.error('Error updating dashboard:', error);
+    throw error;
+  }
+};
+
+// Get user's unlocked contacts
+export const getUserUnlockedContacts = async (): Promise<any> => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/unlocked`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      throw new Error('Authentication expired');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch unlocked contacts');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching unlocked contacts:', error);
+    throw error;
+  }
+};
+
+// Get user's activity
+export const getUserActivity = async (): Promise<any> => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/activity`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      throw new Error('Authentication expired');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user activity');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching user activity:', error);
+    throw error;
+  }
+};
+
+// Add activity
+export const addUserActivity = async (activity: string): Promise<any> => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/dashboard/activity`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ activity })
+    });
+
+    if (response.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      throw new Error('Authentication expired');
+    }
+
+    if (!response.ok) {
+      throw new Error('Failed to add activity');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding activity:', error);
     throw error;
   }
 };

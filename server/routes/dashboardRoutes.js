@@ -1,37 +1,40 @@
 const express = require('express');
 const Dashboard = require('../models/Dashboard');
 const Profile = require('../models/profile');
+const { authMiddleware } = require('./auth'); // Import auth middleware
 
 const router = express.Router();
 
-// GET dashboard with calculated stats
-router.get('/:userId', async (req, res) => {
+// GET dashboard with calculated stats - NOW PROTECTED
+router.get('/', authMiddleware, async (req, res) => {
   try {
-    let dashboard = await Dashboard.findOne({ userId: req.params.userId });
+    const userId = req.userId; // Get from auth middleware instead of params
+    
+    let dashboard = await Dashboard.findOne({ userId });
     
     // If no dashboard exists, create one with defaults
     if (!dashboard) {
       dashboard = await Dashboard.create({
-        userId: req.params.userId,
+        userId,
         availablePoints: 100,
         totalContacts: 0,
         unlockedProfiles: 0,
         myUploads: 0,
         uploadedProfileIds: [],
         unlockedContactIds: [],
-        recentActivity: []
+        recentActivity: ['Welcome! Dashboard created.']
       });
     }
 
     // Calculate actual stats from database to ensure accuracy
-    const actualUploads = await Profile.countDocuments({ uploadedBy: req.params.userId });
+    const actualUploads = await Profile.countDocuments({ uploadedBy: userId });
     const actualUnlockedCount = dashboard.unlockedContactIds ? dashboard.unlockedContactIds.length : 0;
     
     // Update dashboard with accurate counts if they don't match
     if (dashboard.myUploads !== actualUploads || dashboard.unlockedProfiles !== actualUnlockedCount) {
       dashboard.myUploads = actualUploads;
       dashboard.unlockedProfiles = actualUnlockedCount;
-      dashboard.totalContacts = actualUploads; // Total contacts user has contributed
+      dashboard.totalContacts = actualUploads;
       await dashboard.save();
     }
 
@@ -42,9 +45,11 @@ router.get('/:userId', async (req, res) => {
   }
 });
 
-// UPDATE or CREATE dashboard
-router.post('/:userId', async (req, res) => {
+// UPDATE dashboard - NOW PROTECTED
+router.post('/', authMiddleware, async (req, res) => {
   try {
+    const userId = req.userId; // Get from auth middleware
+    
     const updateData = {
       availablePoints: req.body.availablePoints,
       totalContacts: req.body.totalContacts,
@@ -64,7 +69,7 @@ router.post('/:userId', async (req, res) => {
     });
 
     const dashboard = await Dashboard.findOneAndUpdate(
-      { userId: req.params.userId },
+      { userId },
       { $set: updateData },
       { new: true, upsert: true }
     );
@@ -76,10 +81,12 @@ router.post('/:userId', async (req, res) => {
   }
 });
 
-// GET user's unlocked contacts with detailed info
-router.get('/:userId/unlocked', async (req, res) => {
+// GET user's unlocked contacts with detailed info - NOW PROTECTED
+router.get('/unlocked', authMiddleware, async (req, res) => {
   try {
-    const dashboard = await Dashboard.findOne({ userId: req.params.userId });
+    const userId = req.userId;
+    
+    const dashboard = await Dashboard.findOne({ userId });
     if (!dashboard) {
       return res.status(404).json({ error: 'Dashboard not found' });
     }
@@ -90,7 +97,7 @@ router.get('/:userId/unlocked', async (req, res) => {
     }).select('name jobTitle company uploadedAt');
     
     res.json({
-      userId: req.params.userId,
+      userId,
       unlockedContactIds: dashboard.unlockedContactIds || [],
       totalUnlocked: dashboard.unlockedProfiles || 0,
       actualUnlockedCount: dashboard.unlockedContactIds ? dashboard.unlockedContactIds.length : 0,
@@ -102,23 +109,25 @@ router.get('/:userId/unlocked', async (req, res) => {
   }
 });
 
-// GET user's activity summary
-router.get('/:userId/activity', async (req, res) => {
+// GET user's activity summary - NOW PROTECTED
+router.get('/activity', authMiddleware, async (req, res) => {
   try {
-    const dashboard = await Dashboard.findOne({ userId: req.params.userId });
+    const userId = req.userId;
+    
+    const dashboard = await Dashboard.findOne({ userId });
     if (!dashboard) {
       return res.status(404).json({ error: 'Dashboard not found' });
     }
     
     // Get detailed activity information
     const uploadedProfiles = await Profile.find({
-      'uploadedBy': req.params.userId
+      'uploadedBy': userId
     }).sort({ uploadedAt: -1 }).limit(10).select('name jobTitle company uploadedAt');
 
     const recentActivity = dashboard.recentActivity || [];
     
     res.json({
-      recentActivity: recentActivity.slice(-10).reverse(), // Most recent first
+      recentActivity: recentActivity.slice(-10).reverse(),
       uploadedProfiles,
       totalActivities: recentActivity.length,
       lastUpdated: dashboard.updatedAt
@@ -129,9 +138,10 @@ router.get('/:userId/activity', async (req, res) => {
   }
 });
 
-// PATCH - Add activity (helper endpoint)
-router.patch('/:userId/activity', async (req, res) => {
+// PATCH - Add activity - NOW PROTECTED
+router.patch('/activity', authMiddleware, async (req, res) => {
   try {
+    const userId = req.userId;
     const { activity } = req.body;
     
     if (!activity) {
@@ -139,12 +149,12 @@ router.patch('/:userId/activity', async (req, res) => {
     }
 
     const dashboard = await Dashboard.findOneAndUpdate(
-      { userId: req.params.userId },
+      { userId },
       {
         $push: {
           recentActivity: {
             $each: [activity],
-            $slice: -20 // Keep only last 20 activities
+            $slice: -20
           }
         },
         $set: { updatedAt: new Date() }

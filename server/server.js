@@ -91,11 +91,11 @@ app.get('/health', (req, res) => {
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
-
+const dashboardRoutes = require('./routes/dashboardRoutes');
 // API Routes with error boundary
 try {
   app.use('/auth', require('./routes/auth'));
-  app.use('/dashboard', require('./routes/dashboardRoutes'));
+  app.use('/api/dashboard', dashboardRoutes);
   app.use('/profiles', require('./routes/profileRoutes'));
 } catch (routeError) {
   console.error('Route loading error:', routeError);
