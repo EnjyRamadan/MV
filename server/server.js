@@ -19,9 +19,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://your-frontend-domain.vercel.app'
+      'https://contactpro-hrmanager.vercel.app/'
     ];
     
     if (process.env.FRONTEND_URL) {
