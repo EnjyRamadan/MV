@@ -28,7 +28,8 @@ const MyContactsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-
+  const [selectedIndustry, setSelectedIndustry] = useState('');
+  const [selectedSeniority, setSelectedSeniority] = useState('');
 
   // Fetch unlocked contacts
   useEffect(() => {
@@ -100,7 +101,7 @@ const MyContactsPage: React.FC = () => {
     fetchMyContacts();
   }, [user?.id, dashboard?.unlockedContactIds]);
 
-  // Filter contacts based on search
+  // Filter contacts based on search and filters
   useEffect(() => {
     let filtered = [...contacts];
 
@@ -116,10 +117,26 @@ const MyContactsPage: React.FC = () => {
       );
     }
 
+    // Industry filter
+    if (selectedIndustry) {
+      filtered = filtered.filter(contact => 
+        contact.industry.toLowerCase() === selectedIndustry.toLowerCase()
+      );
+    }
+
+    // Seniority filter
+    if (selectedSeniority) {
+      filtered = filtered.filter(contact => 
+        contact.seniorityLevel === selectedSeniority
+      );
+    }
+
     setFilteredContacts(filtered);
-  }, [contacts, searchQuery]);
+  }, [contacts, searchQuery, selectedIndustry, selectedSeniority]);
 
-
+  // Get unique industries and seniority levels for filters
+  const industries = Array.from(new Set(contacts.map(c => c.industry))).filter(Boolean);
+  const seniorityLevels = Array.from(new Set(contacts.map(c => c.seniorityLevel))).filter(Boolean);
 
   // Export contacts as CSV
   const exportContacts = () => {
@@ -262,9 +279,9 @@ const MyContactsPage: React.FC = () => {
         <>
           {/* Search and Filters */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
-            <div className="flex items-center space-x-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Search Input */}
-              <div className="relative flex-1">
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   type="text"
@@ -275,15 +292,42 @@ const MyContactsPage: React.FC = () => {
                 />
               </div>
 
-              {/* Clear Search */}
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <span>Clear</span>
-                </button>
-              )}
+              {/* Industry Filter */}
+              <select
+                value={selectedIndustry}
+                onChange={(e) => setSelectedIndustry(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Industries</option>
+                {industries.map(industry => (
+                  <option key={industry} value={industry}>{industry}</option>
+                ))}
+              </select>
+
+              {/* Seniority Filter */}
+              <select
+                value={selectedSeniority}
+                onChange={(e) => setSelectedSeniority(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">All Levels</option>
+                {seniorityLevels.map(level => (
+                  <option key={level} value={level}>{level}</option>
+                ))}
+              </select>
+
+              {/* Clear Filters */}
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedIndustry('');
+                  setSelectedSeniority('');
+                }}
+                className="flex items-center justify-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Filter className="w-4 h-4" />
+                <span>Clear</span>
+              </button>
             </div>
             
             {/* Results Count */}
