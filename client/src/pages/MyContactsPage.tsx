@@ -29,28 +29,6 @@ const MyContactsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedIndustry, setSelectedIndustry] = useState('');
-  const [selectedSeniority, setSelectedSeniority] = useState('');
-  const [selectedCompanySize, setSelectedCompanySize] = useState('');
-  const [experienceRange, setExperienceRange] = useState({ min: 0, max: 50 });
-
-  // Get unique values for filters
-  const industries = Array.from(new Set(contacts.map((c: Contact) => c.industry))).filter(Boolean);
-  const seniorityLevels = Array.from(new Set(contacts.map((c: Contact) => c.seniorityLevel))).filter(Boolean);
-  const companySizes = Array.from(new Set(contacts.map((c: Contact) => c.companySize))).filter(Boolean);
-
-  // Clear all filters
-  const clearAllFilters = () => {
-    setSearchQuery('');
-    setSelectedIndustry('');
-    setSelectedSeniority('');
-    setSelectedCompanySize('');
-    setExperienceRange({ min: 0, max: 50 });
-  };
-
-  // Check if any filters are active
-  const hasActiveFilters = searchQuery || selectedIndustry || selectedSeniority || 
-    selectedCompanySize || experienceRange.min > 0 || experienceRange.max < 50;
 
   // Fetch unlocked contacts
   useEffect(() => {
@@ -122,7 +100,7 @@ const MyContactsPage: React.FC = () => {
     fetchMyContacts();
   }, [user?.id, dashboard?.unlockedContactIds]);
 
-  // Filter contacts based on search and filters
+  // Filter contacts based on search
   useEffect(() => {
     let filtered = [...contacts];
 
@@ -138,35 +116,8 @@ const MyContactsPage: React.FC = () => {
       );
     }
 
-    // Industry filter
-    if (selectedIndustry) {
-      filtered = filtered.filter(contact => 
-        contact.industry.toLowerCase() === selectedIndustry.toLowerCase()
-      );
-    }
-
-    // Seniority filter
-    if (selectedSeniority) {
-      filtered = filtered.filter(contact => 
-        contact.seniorityLevel === selectedSeniority
-      );
-    }
-
-    // Company size filter
-    if (selectedCompanySize) {
-      filtered = filtered.filter(contact => 
-        contact.companySize === selectedCompanySize
-      );
-    }
-
-    // Experience range filter
-    filtered = filtered.filter(contact =>
-      contact.experience >= experienceRange.min &&
-      contact.experience <= experienceRange.max
-    );
-
     setFilteredContacts(filtered);
-  }, [contacts, searchQuery, selectedIndustry, selectedSeniority, selectedCompanySize, experienceRange]);
+  }, [contacts, searchQuery]);
 
   // Export contacts as CSV
   const exportContacts = () => {
@@ -234,26 +185,13 @@ const MyContactsPage: React.FC = () => {
           </div>
           
           {filteredContacts.length > 0 && (
-            <div className="flex items-center space-x-4">
-              {/* Clear Filters Button */}
-              {hasActiveFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="flex items-center space-x-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  <span>Clear Filters</span>
-                </button>
-              )}
-              
-              {/* Export Button */}
-              <button
-                onClick={exportContacts}
-                className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                <span>Export CSV</span>
-              </button>
-            </div>
+            <button
+              onClick={exportContacts}
+              className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+              <span>Export CSV</span>
+            </button>
           )}
         </div>
 
@@ -346,72 +284,6 @@ const MyContactsPage: React.FC = () => {
               )}
             </div>
             
-            {/* Advanced Filters */}
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Industry Filter */}
-              <select
-                value={selectedIndustry}
-                onChange={(e) => setSelectedIndustry(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">All Industries</option>
-                {industries.map((industry) => (
-                  <option key={industry} value={industry}>{industry}</option>
-                ))}
-              </select>
-
-              {/* Seniority Filter */}
-              <select
-                value={selectedSeniority}
-                onChange={(e) => setSelectedSeniority(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">All Seniority Levels</option>
-                {seniorityLevels.map((level) => (
-                  <option key={level} value={level}>{level}</option>
-                ))}
-              </select>
-
-              {/* Company Size Filter */}
-              <select
-                value={selectedCompanySize}
-                onChange={(e) => setSelectedCompanySize(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">All Company Sizes</option>
-                {companySizes.map((size) => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Experience Range Filter */}
-            <div className="mt-4 flex items-center space-x-4">
-              <label className="text-sm font-medium text-gray-700">Experience Range:</label>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="number"
-                  min="0"
-                  max="50"
-                  value={experienceRange.min}
-                  onChange={(e) => setExperienceRange(prev => ({ ...prev, min: Number(e.target.value) }))}
-                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                  placeholder="Min"
-                />
-                <span className="text-gray-500">to</span>
-                <input
-                  type="number"
-                  min="0"
-                  max="50"
-                  value={experienceRange.max}
-                  onChange={(e) => setExperienceRange(prev => ({ ...prev, max: Number(e.target.value) }))}
-                  className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
-                  placeholder="Max"
-                />
-                <span className="text-sm text-gray-500">years</span>
-              </div>
-            </div>
-            
             {/* Results Count */}
             <div className="mt-4 pt-4 border-t border-gray-200">
               <p className="text-sm text-gray-600">
@@ -423,15 +295,7 @@ const MyContactsPage: React.FC = () => {
           {/* Contacts Grid */}
           {filteredContacts.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500">No contacts match your current filters.</p>
-              {hasActiveFilters && (
-                <button
-                  onClick={clearAllFilters}
-                  className="mt-2 text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  Clear all filters
-                </button>
-              )}
+              <p className="text-gray-500">No contacts match your search.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
