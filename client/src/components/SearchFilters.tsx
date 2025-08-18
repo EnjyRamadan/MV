@@ -183,33 +183,7 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({
           </select>
         </div>
 
-        {/* Verification Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Verification Status
-          </label>
-          <select
-            value={
-              filters.verified === undefined 
-                ? '' 
-                : filters.verified 
-                  ? 'true' 
-                  : 'false'
-            }
-            onChange={(e) => {
-              const val = e.target.value;
-              handleFilterChange(
-                'verified',
-                val === '' ? undefined : val === 'true'
-              );
-            }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">All</option>
-            <option value="true">Verified</option>
-            <option value="false">Unverified</option>
-          </select>
-        </div>
+      
 
         {/* Has Contact Info */}
         <div>
