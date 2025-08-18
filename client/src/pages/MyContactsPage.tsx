@@ -16,7 +16,8 @@ import {
   Download,
   Loader,
   Heart,
-  Award
+  Award,
+  Briefcase
 } from 'lucide-react';
 
 const MyContactsPage: React.FC = () => {
@@ -76,6 +77,7 @@ const MyContactsPage: React.FC = () => {
           companySize: profile.companySize || '',
           skills: Array.isArray(profile.skills) ? profile.skills : [],
           education: profile.education || '',
+          workExperience: profile.workExperience || '', // Include work experience
           email: profile.email,
           phone: profile.phone,
           avatar: profile.avatar || '',
@@ -100,7 +102,7 @@ const MyContactsPage: React.FC = () => {
     fetchMyContacts();
   }, [user?.id, dashboard?.unlockedContactIds]);
 
-  // Filter contacts based on search
+  // Filter contacts based on search (now includes work experience)
   useEffect(() => {
     let filtered = [...contacts];
 
@@ -112,6 +114,7 @@ const MyContactsPage: React.FC = () => {
         contact.jobTitle.toLowerCase().includes(query) ||
         contact.company.toLowerCase().includes(query) ||
         contact.location.toLowerCase().includes(query) ||
+        (contact.workExperience && contact.workExperience.toLowerCase().includes(query)) ||
         contact.skills.some(skill => skill.toLowerCase().includes(query))
       );
     }
@@ -119,11 +122,11 @@ const MyContactsPage: React.FC = () => {
     setFilteredContacts(filtered);
   }, [contacts, searchQuery]);
 
-  // Export contacts as CSV
+  // Export contacts as CSV (now includes work experience)
   const exportContacts = () => {
     if (filteredContacts.length === 0) return;
     
-    const headers = ['Name', 'Job Title', 'Company', 'Location', 'Industry', 'Experience', 'Email', 'Phone', 'Skills'];
+    const headers = ['Name', 'Job Title', 'Company', 'Location', 'Industry', 'Experience', 'Work Experience', 'Email', 'Phone', 'Skills'];
     const csvContent = [
       headers.join(','),
       ...filteredContacts.map(contact => [
@@ -133,6 +136,7 @@ const MyContactsPage: React.FC = () => {
         contact.location,
         contact.industry,
         contact.experience,
+        contact.workExperience || '',
         contact.email || '',
         contact.phone || '',
         contact.skills.join('; ')
@@ -343,6 +347,22 @@ const MyContactsPage: React.FC = () => {
                       <Calendar className="w-3 h-3" />
                       <span className="text-xs">{contact.experience} years experience</span>
                     </div>
+                    
+                    {/* Work Experience Preview */}
+                    {contact.workExperience && (
+                      <div className="mb-3 p-2 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-1 text-gray-700 mb-1">
+                          <Briefcase className="w-3 h-3" />
+                          <span className="text-xs font-medium">Experience</span>
+                        </div>
+                        <p className="text-xs text-gray-600 line-clamp-2">
+                          {contact.workExperience.length > 80 
+                            ? `${contact.workExperience.substring(0, 80)}...`
+                            : contact.workExperience
+                          }
+                        </p>
+                      </div>
+                    )}
                     
                     {/* Contact Info */}
                     <div className="space-y-2 mb-4 p-3 bg-green-50 rounded-lg border border-green-200">

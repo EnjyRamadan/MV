@@ -11,6 +11,7 @@ const profileSchema = new mongoose.Schema(
     seniorityLevel: String,
     skills: [String],
     education: String,
+    workExperience: String, // New field for detailed work experience
     email: String,
     phone: String,
     avatar: String,

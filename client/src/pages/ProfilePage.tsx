@@ -16,7 +16,8 @@ import {
   Lock,
   Unlock,
   AlertCircle,
-  Loader
+  Loader,
+  Briefcase
 } from 'lucide-react';
 
 const ProfilePage: React.FC = () => {
@@ -68,6 +69,7 @@ const ProfilePage: React.FC = () => {
           seniorityLevel: data.seniorityLevel || '',
           skills: Array.isArray(data.skills) ? data.skills : [],
           education: data.education || '',
+          workExperience: data.workExperience || '', // Include work experience
           email: data.email,
           phone: data.phone,
           avatar: data.avatar || '',
@@ -123,15 +125,16 @@ const ProfilePage: React.FC = () => {
       console.log('Contact unlocked successfully:', result);
       
     } catch (error) {
-  if (error instanceof Error) {
-    console.error('Error unlocking contact:', error);
-    alert(`Failed to unlock contact: ${error.message}`);
-  } else {
-    console.error('Unknown error unlocking contact:', error);
-    alert('Failed to unlock contact: Unknown error');
-  }
-}
-
+      if (error instanceof Error) {
+        console.error('Error unlocking contact:', error);
+        alert(`Failed to unlock contact: ${error.message}`);
+      } else {
+        console.error('Unknown error unlocking contact:', error);
+        alert('Failed to unlock contact: Unknown error');
+      }
+    } finally {
+      setUnlocking(false);
+    }
   };
 
   if (loading) {
@@ -224,8 +227,21 @@ const ProfilePage: React.FC = () => {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Skills & Details */}
+        {/* Left Column - Skills, Work Experience & Details */}
         <div className="lg:col-span-2 space-y-8">
+          {/* Work Experience */}
+          {contact.workExperience && (
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center space-x-2 mb-4">
+                <Briefcase className="w-5 h-5 text-gray-600" />
+                <h2 className="text-xl font-semibold text-gray-900">Work Experience</h2>
+              </div>
+              <div className="prose prose-sm max-w-none text-gray-700">
+                <p className="whitespace-pre-wrap">{contact.workExperience}</p>
+              </div>
+            </div>
+          )}
+
           {/* Skills */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Skills</h2>
@@ -257,6 +273,12 @@ const ProfilePage: React.FC = () => {
                 <span className="text-sm font-medium text-gray-500">Experience:</span>
                 <p className="text-gray-900">{contact.experience} years</p>
               </div>
+              {contact.education && (
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Education:</span>
+                  <p className="text-gray-900">{contact.education}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -372,6 +394,10 @@ const ProfilePage: React.FC = () => {
               <div className="flex justify-between">
                 <span className="text-gray-600">Has Contact Info:</span>
                 <span className="font-medium">{contact.hasContactInfo ? 'Yes' : 'No'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Has Work Experience:</span>
+                <span className="font-medium">{contact.workExperience ? 'Yes' : 'No'}</span>
               </div>
             </div>
           </div>

@@ -23,6 +23,7 @@ const UploadPage: React.FC = () => {
     seniorityLevel: '',
     skills: '',
     education: '',
+    workExperience: '',
     email: '',
     phone: '',
     avatar: '',
@@ -72,7 +73,6 @@ const UploadPage: React.FC = () => {
       // Update local contact state and refresh dashboard
       await refreshDashboard();
 
-     
       toast.success('Contact uploaded successfully! +10 points');
 
       setFormData({
@@ -85,6 +85,7 @@ const UploadPage: React.FC = () => {
         seniorityLevel: '',
         skills: '',
         education: '',
+        workExperience: '',
         email: '',
         phone: '',
         avatar: '',
@@ -152,8 +153,8 @@ const UploadPage: React.FC = () => {
     }
   };
 
-  const csvTemplate = `name,jobTitle,company,location,industry,experience,seniorityLevel,skills,education,email,phone
-John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;Node.js;TypeScript,BS Computer Science,john@example.com,555-0123`;
+  const csvTemplate = `name,jobTitle,company,location,industry,experience,seniorityLevel,skills,education,workExperience,email,phone
+John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;Node.js;TypeScript,BS Computer Science,Led development of microservices architecture. Managed team of 3 developers. Built scalable web applications serving 100k+ users,john@example.com,555-0123`;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -379,6 +380,24 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
               />
             </div>
 
+            {/* New Work Experience Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Work Experience
+              </label>
+              <textarea
+                name="workExperience"
+                value={formData.workExperience}
+                onChange={handleInputChange}
+                rows={4}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+                placeholder="Describe work experience, key achievements, projects, responsibilities, etc. (optional)"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Optional: Provide detailed work history, achievements, and key projects
+              </p>
+            </div>
+
             <button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all flex items-center justify-center space-x-2"
@@ -394,7 +413,8 @@ John Doe,Software Engineer,Tech Corp,San Francisco CA,Technology,5,Senior,React;
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">CSV Format Instructions</h3>
               <p className="text-gray-600 mb-4">
-                Upload multiple contacts using CSV format. Use semicolons (;) to separate multiple skills.
+                Upload multiple contacts using CSV format. Use semicolons (;) to separate multiple skills. 
+                Work experience should be in quotes if it contains commas.
               </p>
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-gray-700 mb-2">CSV Template:</h4>

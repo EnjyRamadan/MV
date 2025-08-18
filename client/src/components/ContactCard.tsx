@@ -14,7 +14,8 @@ import {
   Phone,
   User,
   Lock,
-  AlertCircle
+  AlertCircle,
+  Briefcase
 } from 'lucide-react';
 
 interface ContactCardProps {
@@ -60,15 +61,14 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
       console.log('Contact unlocked successfully:', result);
       
     } catch (error) {
-  if (error instanceof Error) {
-    console.error('Error unlocking contact:', error);
-    alert(`Failed to unlock contact: ${error.message}`);
-  } else {
-    console.error('Unknown error unlocking contact:', error);
-    alert('Failed to unlock contact: Unknown error');
-  }
-}
-
+      if (error instanceof Error) {
+        console.error('Error unlocking contact:', error);
+        alert(`Failed to unlock contact: ${error.message}`);
+      } else {
+        console.error('Unknown error unlocking contact:', error);
+        alert('Failed to unlock contact: Unknown error');
+      }
+    }
   };
 
   return (
@@ -112,6 +112,22 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
           <Calendar className="w-4 h-4" />
           <span className="text-sm">{contact.experience} years experience</span>
         </div>
+        
+        {/* Work Experience Preview */}
+        {contact.workExperience && (
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-1 text-gray-700 mb-2">
+              <Briefcase className="w-4 h-4" />
+              <span className="text-sm font-medium">Work Experience</span>
+            </div>
+            <p className="text-sm text-gray-600 line-clamp-2">
+              {contact.workExperience.length > 100 
+                ? `${contact.workExperience.substring(0, 100)}...`
+                : contact.workExperience
+              }
+            </p>
+          </div>
+        )}
         
         {/* Skills */}
         <div className="mb-4">

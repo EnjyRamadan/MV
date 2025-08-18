@@ -19,6 +19,7 @@ export interface Contact {
   companySize?: string;
   skills: string[];
   education: string;
+  workExperience?: string; // New field for detailed work experience
   email?: string;
   phone?: string;
   avatar: string;
@@ -116,6 +117,7 @@ export const ContactProvider: React.FC<ContactProviderProps> = ({
         companySize: profile.companySize || '',
         skills: Array.isArray(profile.skills) ? profile.skills : [],
         education: profile.education || '',
+        workExperience: profile.workExperience || '', // Include work experience
         email: profile.email,
         phone: profile.phone,
         avatar: profile.avatar || '',
@@ -148,7 +150,7 @@ export const ContactProvider: React.FC<ContactProviderProps> = ({
   const searchContacts = (filters: SearchFilters) => {
     let results = [...contacts];
 
-    // Text-based search
+    // Text-based search (now includes work experience)
     if (filters.query?.trim()) {
       const query = filters.query.toLowerCase().trim();
       results = results.filter(
@@ -158,6 +160,7 @@ export const ContactProvider: React.FC<ContactProviderProps> = ({
           contact.company.toLowerCase().includes(query) ||
           contact.location.toLowerCase().includes(query) ||
           contact.industry.toLowerCase().includes(query) ||
+          (contact.workExperience && contact.workExperience.toLowerCase().includes(query)) ||
           contact.skills.some(skill =>
             skill.toLowerCase().includes(query)
           )
