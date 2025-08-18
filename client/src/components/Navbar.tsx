@@ -12,6 +12,7 @@ import {
   Coins,
   ChevronDown,
   User,
+  Heart,
 } from 'lucide-react';
 
 const Navbar: React.FC = () => {
@@ -24,6 +25,7 @@ const Navbar: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
     { name: 'Search', href: '/search', icon: Search },
+    { name: 'My Contacts', href: '/my-contacts', icon: Heart },
     { name: 'Upload', href: '/upload', icon: Upload },
     ...(user?.isAdmin
       ? [{ name: 'Admin', href: '/admin', icon: Settings }]

@@ -10,6 +10,7 @@ import SearchPage from "./pages/SearchPage";
 import UploadPage from "./pages/UploadPage";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
+import MyContactsPage from "./pages/MyContactsPage"; // <-- Add this import
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import GoogleSuccess from "./pages/GoogleSuccess";
@@ -39,6 +40,15 @@ function AppRoutes() {
           <ProtectedRoute>
             <Navbar />
             <SearchPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/my-contacts"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <MyContactsPage />
           </ProtectedRoute>
         }
       />
