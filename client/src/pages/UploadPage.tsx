@@ -590,18 +590,17 @@ const UploadPage: React.FC = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number
+                      Phone Number *
                     </label>
                     <input
                       type="tel"
                       value={linkedinPhone}
                       onChange={(e) => setLinkedinPhone(e.target.value)}
+                      required
                       className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="+1-555-0123"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Optional: Provide phone number if available
-                    </p>
+                    
                   </div>
                 </div>
               ) : (
@@ -628,12 +627,12 @@ const UploadPage: React.FC = () => {
                     <div>https://www.linkedin.com/in/janedoe/,+1-555-0002</div>
                     <div>https://www.linkedin.com/in/mikejohnson/,+1-555-0003</div>
                   </div>
-                  <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded">
+                  {/* <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded">
                     <p className="text-xs text-amber-700">
                       <strong>Note:</strong> Phone column is optional but recommended. 
                       Leave it empty if not available - LinkedIn data will be used when possible.
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               )}
 
