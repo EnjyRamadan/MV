@@ -33,7 +33,6 @@ const UploadPage: React.FC = () => {
   // LinkedIn scraping data
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [linkedinFile, setLinkedinFile] = useState<File | null>(null);
-  const [linkedinCookies, setLinkedinCookies] = useState('');
   const [scrapingMode, setScrapingMode] = useState<'single' | 'bulk'>('single');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingResults, setProcessingResults] = useState<{
@@ -108,8 +107,7 @@ const UploadPage: React.FC = () => {
   };
 
   // LinkedIn scraping functions
-  const scrapeLinkedInProfile = async (profileUrl: string) => {
-    const apiUrl = 'https://api.apify.com/v2/acts/curious_coder~linkedin-profile-scraper/run-sync-get-dataset-items';
+  const scrapeLinkedInProfiles = async (profileUrls: string[]) => {
     const apiToken = process.env.REACT_APP_APIFY_API_KEY;
 
     // Debug: Check if API key is loaded
@@ -121,116 +119,137 @@ const UploadPage: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${apiUrl}?token=${apiToken}`, {
+      // First, start the actor run
+      const runResponse = await fetch(`https://api.apify.com/v2/acts/supreme_coder~linkedin-profile-scraper/runs?token=${apiToken}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          startUrls: [{ url: profileUrl }],
-          // LinkedIn cookies are required for this scraper to work
-          linCookies: linkedinCookies || "",
-          proxy: {
-            useApifyProxy: true
-          }
+          urls: profileUrls.map(url => ({ url })),
+          "findContacts.contactCompassToken": ""
         })
       });
 
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+      if (!runResponse.ok) {
+        throw new Error(`API request failed: ${runResponse.status} ${runResponse.statusText}`);
       }
 
-      const data = await response.json();
-      return data;
+      const runData = await runResponse.json();
+      const runId = runData.data.id;
+
+      // Wait for the run to finish
+      let runStatus = 'RUNNING';
+      while (runStatus === 'RUNNING') {
+        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
+        
+        const statusResponse = await fetch(`https://api.apify.com/v2/acts/supreme_coder~linkedin-profile-scraper/runs/${runId}?token=${apiToken}`);
+        const statusData = await statusResponse.json();
+        runStatus = statusData.data.status;
+      }
+
+      if (runStatus !== 'SUCCEEDED') {
+        throw new Error(`Scraping failed with status: ${runStatus}`);
+      }
+
+      // Get the dataset items
+      const datasetId = runData.data.defaultDatasetId;
+      const itemsResponse = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`);
+      
+      if (!itemsResponse.ok) {
+        throw new Error(`Failed to fetch results: ${itemsResponse.status} ${itemsResponse.statusText}`);
+      }
+
+      const items = await itemsResponse.json();
+      return items;
     } catch (error) {
-      console.error('Error scraping LinkedIn profile:', error);
+      console.error('Error scraping LinkedIn profiles:', error);
       throw error;
     }
   };
 
-  const transformLinkedInData = (linkedInData: any) => {
+  const transformLinkedInData = (linkedInProfile: any) => {
     // Transform the LinkedIn API response to match our contact format
-    const profile = Array.isArray(linkedInData) ? linkedInData[0] : linkedInData;
-    
-    if (!profile) {
+    if (!linkedInProfile) {
       throw new Error('No profile data received');
     }
 
     // Extract work experience description
     let workExperience = '';
-    if (profile.positions && profile.positions.length > 0) {
-      workExperience = profile.positions
-        .map((pos: any) => `${pos.title} at ${pos.companyName}: ${pos.description || 'No description available'}`)
+    if (linkedInProfile.experiences && linkedInProfile.experiences.length > 0) {
+      workExperience = linkedInProfile.experiences
+        .map((exp: any) => `${exp.title || ''} at ${exp.company || ''}: ${exp.description || 'No description available'}`)
         .join('\n\n');
     }
 
     // Extract skills
     let skills: string[] = [];
-    if (profile.skills && Array.isArray(profile.skills)) {
-      skills = profile.skills.map((skill: any) => 
+    if (linkedInProfile.skills && Array.isArray(linkedInProfile.skills)) {
+      skills = linkedInProfile.skills.map((skill: any) => 
         typeof skill === 'string' ? skill : skill.name || skill.title || ''
       ).filter((skill: string) => skill.trim());
     }
 
     // Extract education
     let education = '';
-    if (profile.educations && profile.educations.length > 0) {
-      education = profile.educations
-        .map((edu: any) => `${edu.degreeName || edu.fieldOfStudy || ''} at ${edu.schoolName || ''}`)
+    if (linkedInProfile.educations && linkedInProfile.educations.length > 0) {
+      education = linkedInProfile.educations
+        .map((edu: any) => `${edu.degree || edu.fieldOfStudy || ''} at ${edu.school || ''}`)
         .filter((edu: string) => edu.trim())
         .join('; ');
     }
 
-    // Determine industry from company or profile data
-    let industry = profile.industryName || 'Other';
-    if (profile.positions && profile.positions.length > 0) {
-      const currentPosition = profile.positions[0];
-      if (currentPosition.company && currentPosition.company.industries) {
-        industry = currentPosition.company.industries[0] || industry;
+    // Determine industry from profile data
+    let industry = linkedInProfile.industry || 'Other';
+    if (linkedInProfile.experiences && linkedInProfile.experiences.length > 0) {
+      const currentExperience = linkedInProfile.experiences[0];
+      if (currentExperience.companyIndustry) {
+        industry = currentExperience.companyIndustry;
       }
     }
 
     // Calculate experience years
     let experienceYears = 0;
-    if (profile.positions && profile.positions.length > 0) {
+    if (linkedInProfile.experiences && linkedInProfile.experiences.length > 0) {
       // Simple calculation based on first position
-      const firstPosition = profile.positions[0];
-      if (firstPosition.timePeriod && firstPosition.timePeriod.startDate) {
-        const startYear = firstPosition.timePeriod.startDate.year;
+      const firstExperience = linkedInProfile.experiences[0];
+      if (firstExperience.startDate) {
+        const startYear = new Date(firstExperience.startDate).getFullYear();
         const currentYear = new Date().getFullYear();
         experienceYears = currentYear - startYear;
       }
     }
 
     // Determine seniority level based on job title
-    const jobTitle = profile.positions?.[0]?.title || profile.jobTitle || '';
+    const jobTitle = linkedInProfile.experiences?.[0]?.title || linkedInProfile.jobTitle || '';
     let seniorityLevel = 'Mid-level';
-    if (jobTitle.toLowerCase().includes('senior') || jobTitle.toLowerCase().includes('lead')) {
+    const titleLower = jobTitle.toLowerCase();
+    if (titleLower.includes('senior') || titleLower.includes('lead')) {
       seniorityLevel = 'Senior';
-    } else if (jobTitle.toLowerCase().includes('director')) {
+    } else if (titleLower.includes('director')) {
       seniorityLevel = 'Director';
-    } else if (jobTitle.toLowerCase().includes('vp') || jobTitle.toLowerCase().includes('vice president')) {
+    } else if (titleLower.includes('vp') || titleLower.includes('vice president')) {
       seniorityLevel = 'VP';
-    } else if (jobTitle.toLowerCase().includes('ceo') || jobTitle.toLowerCase().includes('cto') || jobTitle.toLowerCase().includes('cfo')) {
+    } else if (titleLower.includes('ceo') || titleLower.includes('cto') || titleLower.includes('cfo')) {
       seniorityLevel = 'C-Level';
-    } else if (jobTitle.toLowerCase().includes('junior') || experienceYears < 2) {
+    } else if (titleLower.includes('junior') || experienceYears < 2) {
       seniorityLevel = 'Entry-level';
     }
 
     return {
-      name: `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
-      jobTitle: profile.positions?.[0]?.title || profile.jobTitle || profile.occupation || '',
-      company: profile.positions?.[0]?.companyName || profile.companyName || '',
-      location: profile.geoLocationName || profile.location || '',
+      name: `${linkedInProfile.firstName || ''} ${linkedInProfile.lastName || ''}`.trim() || linkedInProfile.fullName || '',
+      jobTitle,
+      company: linkedInProfile.experiences?.[0]?.company || linkedInProfile.company || '',
+      location: linkedInProfile.location || '',
       industry,
       experience: Math.max(0, experienceYears),
       seniorityLevel,
       skills,
       education,
       workExperience,
-      email: '', // LinkedIn API might not provide email
-      phone: '', // LinkedIn API might not provide phone
-      avatar: profile.pictureUrl || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+      email: linkedInProfile.email || '', // Profile might not provide email
+      phone: linkedInProfile.phone || '', // Profile might not provide phone
+      avatar: linkedInProfile.profilePicture || linkedInProfile.avatar || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
       uploadedBy: user?.id || '',
       companySize: '',
     };
@@ -239,20 +258,6 @@ const UploadPage: React.FC = () => {
   const handleLinkedInScraping = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
-    // Validate cookies
-    if (!linkedinCookies.trim()) {
-      toast.error('LinkedIn cookies are required. Please paste your cookies in JSON format.');
-      return;
-    }
-
-    // Try to validate JSON format
-    try {
-      JSON.parse(linkedinCookies);
-    } catch {
-      toast.error('Invalid JSON format for cookies. Please check your cookies format.');
-      return;
-    }
 
     setIsProcessing(true);
     setProcessingResults(null);
@@ -297,45 +302,62 @@ const UploadPage: React.FC = () => {
 
       setProcessingResults({ ...results });
 
-      // Process each URL
-      for (const url of urlsToProcess) {
-        try {
-          // Update processing status
-          results.processed++;
+      try {
+        // Scrape all LinkedIn profiles at once
+        const linkedInData = await scrapeLinkedInProfiles(urlsToProcess);
+
+        // Process each profile result
+        for (let i = 0; i < urlsToProcess.length; i++) {
+          const url = urlsToProcess[i];
+          const profileData = linkedInData[i];
+
+          try {
+            results.processed++;
+            setProcessingResults({ ...results });
+
+            if (!profileData) {
+              throw new Error('No profile data received');
+            }
+
+            // Transform data to our format
+            const contactData = transformLinkedInData(profileData);
+
+            // Save to backend
+            const res = await fetch('https://contactpro-backend.vercel.app/profiles', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(contactData)
+            });
+
+            if (!res.ok) throw new Error('Failed to save contact');
+
+            results.successful++;
+            results.results.push({ url, status: 'success', data: contactData });
+
+          } catch (error) {
+            console.error(`Error processing ${url}:`, error);
+            results.failed++;
+            results.results.push({ 
+              url, 
+              status: 'failed', 
+              error: error instanceof Error ? error.message : 'Unknown error'
+            });
+          }
+
+          // Update results after each profile
           setProcessingResults({ ...results });
-
-          // Scrape LinkedIn profile
-          const linkedInData = await scrapeLinkedInProfile(url);
-          
-          // Transform data to our format
-          const contactData = transformLinkedInData(linkedInData);
-
-          // Save to backend
-          const res = await fetch('https://contactpro-backend.vercel.app/profiles', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(contactData)
-          });
-
-          if (!res.ok) throw new Error('Failed to save contact');
-
-          results.successful++;
-          results.results.push({ url, status: 'success', data: contactData });
-
-          // Small delay to avoid overwhelming the API
-          await new Promise(resolve => setTimeout(resolve, 1000));
-
-        } catch (error) {
-          console.error(`Error processing ${url}:`, error);
+        }
+      } catch (error) {
+        // If the entire scraping process fails, mark all as failed
+        for (const url of urlsToProcess) {
+          results.processed++;
           results.failed++;
           results.results.push({ 
             url, 
             status: 'failed', 
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : 'Scraping service failed'
           });
         }
-
-        // Update results after each URL
         setProcessingResults({ ...results });
       }
 
@@ -637,41 +659,8 @@ const UploadPage: React.FC = () => {
                 <span>LinkedIn Profile Scraper</span>
               </h3>
               <p className="text-gray-600 mb-4">
-                Extract contact information from LinkedIn profiles automatically. Each successfully processed profile earns you 10 points.
+                Extract contact information from LinkedIn profiles automatically using the supreme_coder scraper. Each successfully processed profile earns you 10 points.
               </p>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                <div className="flex items-start space-x-2">
-                  <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm text-amber-800 font-medium">Important: LinkedIn Cookies Required</p>
-                    <ul className="text-sm text-amber-700 mt-1 space-y-1">
-                      <li>• This scraper requires LinkedIn session cookies to access profiles</li>
-                      <li>• You must be logged into LinkedIn and extract your cookies</li>
-                      <li>• Install Cookie-Editor extension, login to LinkedIn, export cookies</li>
-                      <li>• Paste the cookies in JSON format in the field below</li>
-                      <li>• Without cookies, the API will return 401 errors</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* LinkedIn Cookies Input */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  LinkedIn Cookies (Required) *
-                </label>
-                <textarea
-                  value={linkedinCookies}
-                  onChange={(e) => setLinkedinCookies(e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                  placeholder='[{"name":"JSESSIONID","value":"ajax:123...","domain":".linkedin.com"}]'
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Export your LinkedIn cookies in JSON format using Cookie-Editor extension
-                </p>
-              </div>
             </div>
 
             {/* Mode Selection */}
@@ -703,24 +692,6 @@ const UploadPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleLinkedInScraping} className="space-y-6">
-              {/* LinkedIn Cookies Input - Always show this first */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  LinkedIn Cookies (Required) *
-                </label>
-                <textarea
-                  value={linkedinCookies}
-                  onChange={(e) => setLinkedinCookies(e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-                  placeholder='[{"name":"JSESSIONID","value":"ajax:123...","domain":".linkedin.com"}]'
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Export your LinkedIn cookies in JSON format using Cookie-Editor extension
-                </p>
-              </div>
-
               {scrapingMode === 'single' ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -770,7 +741,7 @@ const UploadPage: React.FC = () => {
 
               <button
                 type="submit"
-                disabled={isProcessing || !linkedinCookies.trim()}
+                disabled={isProcessing}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
