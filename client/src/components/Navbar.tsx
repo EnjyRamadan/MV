@@ -51,7 +51,7 @@ const Navbar: React.FC = () => {
               className="h-10 w-auto" // Adjust height as needed (h-8, h-10, h-12)
             />
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              ContactPro
+              dalily ai
             </span>
           </Link>
 

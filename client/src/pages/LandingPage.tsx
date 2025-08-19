@@ -34,7 +34,7 @@ const LandingPage: React.FC = () => {
               className="h-10 w-auto" // Adjust height as needed (h-8, h-10, h-12)
             />
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                ConnectPro
+                dalily ai
               </span>
             </div>
             <div className="flex items-center space-x-4">
