@@ -34,6 +34,13 @@ const UploadPage: React.FC = () => {
   const [linkedinFile, setLinkedinFile] = useState<File | null>(null);
   const [scrapingMode, setScrapingMode] = useState<'single' | 'bulk'>('single');
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // New state for LinkedIn contact info
+  const [linkedinContactInfo, setLinkedinContactInfo] = useState({
+    email: '',
+    phone: ''
+  });
+
   const [processingResults, setProcessingResults] = useState<{
     total: number;
     processed: number;
@@ -112,7 +119,7 @@ const UploadPage: React.FC = () => {
     setIsProcessing(true);
     setProcessingResults(null);
 
-    let urlsToProcess: string[] = [];
+    let processedData: Array<{ url: string; email?: string; phone?: string }> = [];
 
     try {
       if (scrapingMode === 'single') {
@@ -120,31 +127,59 @@ const UploadPage: React.FC = () => {
           toast.error('Please enter a LinkedIn URL');
           return;
         }
-        urlsToProcess = [linkedinUrl.trim()];
+        processedData = [{
+          url: linkedinUrl.trim(),
+          email: linkedinContactInfo.email.trim(),
+          phone: linkedinContactInfo.phone.trim()
+        }];
       } else {
-        // Handle file upload
+        // Handle CSV file upload
         if (!linkedinFile) {
-          toast.error('Please select a file');
+          toast.error('Please select a CSV file');
           return;
         }
 
         const fileContent = await linkedinFile.text();
         const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
         
-        // Filter for LinkedIn URLs
-        urlsToProcess = lines.filter(line => 
-          line.includes('linkedin.com/in/') || line.includes('linkedin.com/pub/')
+        if (lines.length === 0) {
+          toast.error('CSV file is empty');
+          return;
+        }
+
+        // Parse CSV headers
+        const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+        const urlIndex = headers.findIndex(h => h.includes('url'));
+        const emailIndex = headers.findIndex(h => h.includes('email'));
+        const phoneIndex = headers.findIndex(h => h.includes('phone'));
+
+        if (urlIndex === -1) {
+          toast.error('CSV file must have a "url" column');
+          return;
+        }
+
+        // Parse CSV data
+        const dataRows = lines.slice(1); // Skip header row
+        processedData = dataRows.map(row => {
+          const columns = row.split(',').map(col => col.trim().replace(/"/g, ''));
+          return {
+            url: columns[urlIndex] || '',
+            email: emailIndex !== -1 ? columns[emailIndex] || '' : '',
+            phone: phoneIndex !== -1 ? columns[phoneIndex] || '' : ''
+          };
+        }).filter(item => 
+          item.url && (item.url.includes('linkedin.com/in/') || item.url.includes('linkedin.com/pub/'))
         );
 
-        if (urlsToProcess.length === 0) {
-          toast.error('No valid LinkedIn URLs found in the file');
+        if (processedData.length === 0) {
+          toast.error('No valid LinkedIn URLs found in the CSV file');
           return;
         }
       }
 
       // Initialize processing results
       const initialResults = {
-        total: urlsToProcess.length,
+        total: processedData.length,
         processed: 0,
         successful: 0,
         failed: 0,
@@ -152,14 +187,14 @@ const UploadPage: React.FC = () => {
       };
       setProcessingResults(initialResults);
 
-      // Call backend API for LinkedIn scraping
+      // Call backend API for LinkedIn scraping with contact info
       const response = await fetch('https://contactpro-backend.vercel.app/api/scrape-linkedin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          urls: urlsToProcess,
+          profilesData: processedData, // Changed from 'urls' to 'profilesData'
           userId: user.id
         })
       });
@@ -187,20 +222,21 @@ const UploadPage: React.FC = () => {
 
       // Reset form
       setLinkedinUrl('');
+      setLinkedinContactInfo({ email: '', phone: '' });
       setLinkedinFile(null);
 
     } catch (error) {
       console.error('LinkedIn scraping error:', error);
       
       // Update results to show all failed
-      if (urlsToProcess.length > 0) {
+      if (processedData.length > 0) {
         const failedResults = {
-          total: urlsToProcess.length,
-          processed: urlsToProcess.length,
+          total: processedData.length,
+          processed: processedData.length,
           successful: 0,
-          failed: urlsToProcess.length,
-          results: urlsToProcess.map(url => ({
-            url,
+          failed: processedData.length,
+          results: processedData.map(item => ({
+            url: item.url,
             status: 'failed' as const,
             error: error instanceof Error ? error.message : 'Unknown error'
           }))
@@ -217,14 +253,14 @@ const UploadPage: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
-      const validTypes = ['text/plain', 'text/csv', '.txt', '.csv'];
+      // Validate file type - only CSV for structured data
+      const validTypes = ['text/csv', 'application/vnd.ms-excel'];
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
       
-      if (fileExtension === 'txt' || fileExtension === 'csv' || file.type === 'text/plain' || file.type === 'text/csv') {
+      if (fileExtension === 'csv' || file.type === 'text/csv' || file.type === 'application/vnd.ms-excel') {
         setLinkedinFile(file);
       } else {
-        toast.error('Please select a TXT or CSV file');
+        toast.error('Please select a CSV file');
         e.target.value = '';
       }
     }
@@ -313,7 +349,6 @@ const UploadPage: React.FC = () => {
                   name="company"
                   value={formData.company}
                   onChange={handleInputChange}
-                
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="e.g. Google, Microsoft"
                 />
@@ -328,7 +363,6 @@ const UploadPage: React.FC = () => {
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="e.g. San Francisco, CA"
                 />
@@ -342,7 +376,6 @@ const UploadPage: React.FC = () => {
                   name="industry"
                   value={formData.industry}
                   onChange={handleInputChange}
-                 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select industry</option>
@@ -364,7 +397,6 @@ const UploadPage: React.FC = () => {
                   name="experience"
                   value={formData.experience}
                   onChange={handleInputChange}
-                 
                   min={0}
                   max={50}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -380,7 +412,6 @@ const UploadPage: React.FC = () => {
                   name="seniorityLevel"
                   value={formData.seniorityLevel}
                   onChange={handleInputChange}
-                 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select level</option>
@@ -417,7 +448,6 @@ const UploadPage: React.FC = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="+1-555-0123"
                 />
@@ -433,7 +463,6 @@ const UploadPage: React.FC = () => {
                 name="skills"
                 value={formData.skills}
                 onChange={handleInputChange}
-                
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g. React, Node.js, Python, AWS"
               />
@@ -448,7 +477,6 @@ const UploadPage: React.FC = () => {
                 name="education"
                 value={formData.education}
                 onChange={handleInputChange}
-               
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g. BS Computer Science, Stanford University"
               />
@@ -497,9 +525,10 @@ const UploadPage: React.FC = () => {
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-1">How it works:</p>
                     <ul className="list-disc list-inside space-y-1 text-blue-700">
-                      <li>Enter a single LinkedIn profile URL or upload a file with multiple URLs</li>
+                      <li>Enter LinkedIn profile URL along with contact information (phone/email)</li>
+                      <li>Upload a CSV file with URLs and contact details for bulk processing</li>
                       <li>Our backend service will scrape the profiles securely</li>
-                      <li>Extracted data is automatically saved to your contact database</li>
+                      <li>Your provided contact info will be used if not available on LinkedIn</li>
                       <li>You earn 10 points for each successfully processed profile</li>
                     </ul>
                   </div>
@@ -519,7 +548,7 @@ const UploadPage: React.FC = () => {
                     onChange={(e) => setScrapingMode(e.target.value as 'single' | 'bulk')}
                     className="text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">Single URL</span>
+                  <span className="text-sm font-medium text-gray-700">Single URL with Contact Info</span>
                 </label>
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -530,60 +559,104 @@ const UploadPage: React.FC = () => {
                     onChange={(e) => setScrapingMode(e.target.value as 'single' | 'bulk')}
                     className="text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">Bulk Upload (File)</span>
+                  <span className="text-sm font-medium text-gray-700">Bulk Upload (CSV File)</span>
                 </label>
               </div>
             </div>
 
             <form onSubmit={handleLinkedInScraping} className="space-y-6">
               {scrapingMode === 'single' ? (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    LinkedIn Profile URL
-                  </label>
-                  <div className="relative">
-                    <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input
-                      type="url"
-                      value={linkedinUrl}
-                      onChange={(e) => {
-                        let value = e.target.value.trim();
-                        // Auto-add https:// if missing
-                        if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
-                          value = 'https://' + value;
-                        }
-                        setLinkedinUrl(value);
-                      }}
-                      className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="www.linkedin.com/in/username/ or https://www.linkedin.com/in/username/"
-                      required
-                    />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      LinkedIn Profile URL *
+                    </label>
+                    <div className="relative">
+                      <Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <input
+                        type="url"
+                        value={linkedinUrl}
+                        onChange={(e) => {
+                          let value = e.target.value.trim();
+                          // Auto-add https:// if missing
+                          if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                            value = 'https://' + value;
+                          }
+                          setLinkedinUrl(value);
+                        }}
+                        className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="www.linkedin.com/in/username/ or https://www.linkedin.com/in/username/"
+                        required
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      You can enter with or without https:// - we'll add it automatically
+                    </p>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    You can enter with or without https:// - we'll add it automatically
-                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        value={linkedinContactInfo.email}
+                        onChange={(e) => setLinkedinContactInfo(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="contact@email.com"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Optional: Will be used if email is not available on LinkedIn profile
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        value={linkedinContactInfo.phone}
+                        onChange={(e) => setLinkedinContactInfo(prev => ({ ...prev, phone: e.target.value }))}
+                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="+1-555-0123"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Optional: Will be used if phone is not available on LinkedIn profile
+                      </p>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Upload File with LinkedIn URLs
+                    Upload CSV File with LinkedIn URLs and Contact Info
                   </label>
                   <div className="relative">
                     <input
                       type="file"
-                      accept=".txt,.csv"
+                      accept=".csv"
                       onChange={handleFileChange}
                       className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       required
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Upload a TXT or CSV file with one LinkedIn URL per line. Example format:
+                    Upload a CSV file with the following format (headers required):
                   </p>
-                  <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600 font-mono">
-                    https://www.linkedin.com/in/johnsmith/<br/>
-                    https://www.linkedin.com/in/janedoe/<br/>
-                    https://www.linkedin.com/in/mikejohnson/
+                  <div className="mt-2 p-3 bg-gray-50 rounded text-xs text-gray-600 font-mono">
+                    <div className="font-semibold mb-1">CSV Format:</div>
+                    <div>url,email,phone</div>
+                    <div>https://www.linkedin.com/in/johnsmith/,john@email.com,+1-555-0001</div>
+                    <div>https://www.linkedin.com/in/janedoe/,jane@email.com,+1-555-0002</div>
+                    <div>https://www.linkedin.com/in/mikejohnson/,mike@email.com,+1-555-0003</div>
+                  </div>
+                  <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded">
+                    <p className="text-xs text-amber-700">
+                      <strong>Note:</strong> Email and phone columns are optional but recommended. 
+                      Leave them empty if not available - LinkedIn data will be used when possible.
+                    </p>
                   </div>
                 </div>
               )}
@@ -682,6 +755,8 @@ const UploadPage: React.FC = () => {
                                 ✓ Successfully scraped: {result.data?.name || 'Profile data extracted'}
                                 {result.data?.jobTitle && ` - ${result.data.jobTitle}`}
                                 {result.data?.company && ` at ${result.data.company}`}
+                                {result.data?.email && ` | Email: ${result.data.email}`}
+                                {result.data?.phone && ` | Phone: ${result.data.phone}`}
                               </p>
                             ) : (
                               <p className="text-sm text-red-700">

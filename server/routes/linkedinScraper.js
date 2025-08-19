@@ -1,16 +1,16 @@
-// routes/linkedinScraper.js
+// routes/linkedinScraper.js - Updated to handle contact information
 const express = require('express');
 const router = express.Router();
 
 // LinkedIn scraping endpoint
 router.post('/scrape-linkedin', async (req, res) => {
   try {
-    const { urls, userId } = req.body;
+    const { profilesData, userId } = req.body;
 
     // Validate input
-    if (!urls || !Array.isArray(urls) || urls.length === 0) {
+    if (!profilesData || !Array.isArray(profilesData) || profilesData.length === 0) {
       return res.status(400).json({ 
-        error: 'URLs array is required and cannot be empty' 
+        error: 'ProfilesData array is required and cannot be empty' 
       });
     }
 
@@ -20,12 +20,16 @@ router.post('/scrape-linkedin', async (req, res) => {
       });
     }
 
-    // Validate URLs
-    const validUrls = urls.filter(url => 
-      url.includes('linkedin.com/in/') || url.includes('linkedin.com/pub/')
-    );
+    // Validate and structure profile data
+    const validProfiles = profilesData.filter(profile => 
+      profile.url && (profile.url.includes('linkedin.com/in/') || profile.url.includes('linkedin.com/pub/'))
+    ).map(profile => ({
+      url: profile.url.trim(),
+      email: (profile.email || '').trim(),
+      phone: (profile.phone || '').trim()
+    }));
 
-    if (validUrls.length === 0) {
+    if (validProfiles.length === 0) {
       return res.status(400).json({ 
         error: 'No valid LinkedIn URLs found' 
       });
@@ -41,24 +45,26 @@ router.post('/scrape-linkedin', async (req, res) => {
 
     // Initialize results tracking
     const results = {
-      total: validUrls.length,
+      total: validProfiles.length,
       processed: 0,
       successful: 0,
       failed: 0,
       results: []
     };
 
-    console.log(`Starting LinkedIn scraping for ${validUrls.length} URLs`);
+    console.log(`Starting LinkedIn scraping for ${validProfiles.length} profiles with contact info`);
 
     try {
-      // Start the Apify actor run
+      // Start the Apify actor run with just URLs
+      const urls = validProfiles.map(profile => ({ url: profile.url }));
+      
       const runResponse = await fetch(`https://api.apify.com/v2/acts/supreme_coder~linkedin-profile-scraper/runs?token=${apiToken}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          urls: validUrls.map(url => ({ url })),
+          urls: urls,
           "findContacts.contactCompassToken": ""
         })
       });
@@ -110,9 +116,9 @@ router.post('/scrape-linkedin', async (req, res) => {
       const scrapedData = await itemsResponse.json();
       console.log(`Received ${scrapedData.length} scraped profiles`);
 
-      // Process each scraped profile
-      for (let i = 0; i < validUrls.length; i++) {
-        const url = validUrls[i];
+      // Process each scraped profile with the provided contact info
+      for (let i = 0; i < validProfiles.length; i++) {
+        const profileInput = validProfiles[i];
         const profileData = scrapedData[i];
 
         try {
@@ -122,8 +128,8 @@ router.post('/scrape-linkedin', async (req, res) => {
             throw new Error('No profile data received');
           }
 
-          // Transform LinkedIn data to our contact format
-          const contactData = transformLinkedInData(profileData, userId);
+          // Transform LinkedIn data to our contact format, including user-provided contact info
+          const contactData = transformLinkedInDataWithContactInfo(profileData, userId, profileInput);
 
           // Save contact using the existing profiles API endpoint
           const saveResponse = await fetch(`${process.env.BASE_URL || 'https://contactpro-backend.vercel.app'}/profiles`, {
@@ -143,22 +149,24 @@ router.post('/scrape-linkedin', async (req, res) => {
 
           results.successful++;
           results.results.push({ 
-            url, 
+            url: profileInput.url, 
             status: 'success', 
             data: {
               name: contactData.name,
               jobTitle: contactData.jobTitle,
-              company: contactData.company
+              company: contactData.company,
+              email: contactData.email,
+              phone: contactData.phone
             }
           });
 
           console.log(`Successfully processed profile: ${contactData.name}`);
 
         } catch (error) {
-          console.error(`Error processing ${url}:`, error);
+          console.error(`Error processing ${profileInput.url}:`, error);
           results.failed++;
           results.results.push({ 
-            url, 
+            url: profileInput.url, 
             status: 'failed', 
             error: error.message
           });
@@ -169,11 +177,11 @@ router.post('/scrape-linkedin', async (req, res) => {
       console.error('Scraping service error:', scrapingError);
       
       // Mark all URLs as failed if scraping service fails
-      for (const url of validUrls) {
+      for (const profile of validProfiles) {
         results.processed++;
         results.failed++;
         results.results.push({ 
-          url, 
+          url: profile.url, 
           status: 'failed', 
           error: 'LinkedIn scraping service failed'
         });
@@ -208,8 +216,8 @@ router.post('/scrape-linkedin', async (req, res) => {
   }
 });
 
-// Helper function to transform LinkedIn data
-function transformLinkedInData(linkedInProfile, userId) {
+// Updated helper function to transform LinkedIn data with user-provided contact info
+function transformLinkedInDataWithContactInfo(linkedInProfile, userId, profileInput) {
   if (!linkedInProfile) {
     throw new Error('No profile data received');
   }
@@ -391,6 +399,10 @@ function transformLinkedInData(linkedInProfile, userId) {
   const location = linkedInProfile.geoLocationName || linkedInProfile.geoCountryName || 
                   linkedInProfile.positions?.[0]?.locationName || '';
 
+  // Use user-provided contact info as priority, fallback to LinkedIn data
+  const finalEmail = profileInput.email || linkedInProfile.email || '';
+  const finalPhone = profileInput.phone || linkedInProfile.phone || '';
+
   return {
     name: `${linkedInProfile.firstName || ''} ${linkedInProfile.lastName || ''}`.trim() || linkedInProfile.fullName || '',
     jobTitle,
@@ -402,12 +414,12 @@ function transformLinkedInData(linkedInProfile, userId) {
     skills,
     education,
     workExperience,
-    email: linkedInProfile.email || '', // Profile might not provide email
-    phone: linkedInProfile.phone || '', // Profile might not provide phone
+    email: finalEmail, // Prioritize user-provided email
+    phone: finalPhone, // Prioritize user-provided phone
     avatar: linkedInProfile.pictureUrl || linkedInProfile.profilePicture || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
     uploadedBy: userId,
     companySize,
-    linkedinUrl: linkedInProfile.inputUrl || linkedInProfile.url || linkedInProfile.linkedinUrl || ''
+    linkedinUrl: linkedInProfile.inputUrl || linkedInProfile.url || linkedInProfile.linkedinUrl || profileInput.url
   };
 }
 
