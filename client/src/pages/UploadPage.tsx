@@ -597,18 +597,17 @@ const UploadPage: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
+                        Email Address *
                       </label>
                       <input
                         type="email"
                         value={linkedinContactInfo.email}
                         onChange={(e) => setLinkedinContactInfo(prev => ({ ...prev, email: e.target.value }))}
+                        required
                         className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="contact@email.com"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Optional: Will be used if email is not available on LinkedIn profile
-                      </p>
+                     
                     </div>
 
                     <div>
@@ -619,11 +618,14 @@ const UploadPage: React.FC = () => {
                         type="tel"
                         value={linkedinContactInfo.phone}
                         onChange={(e) => setLinkedinContactInfo(prev => ({ ...prev, phone: e.target.value }))}
+                       
                         className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="+1-555-0123"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Optional: Will be used if phone is not available on LinkedIn profile
+                      <p>
+                        <span className="text-xs text-gray-500">
+                          Optional: Provide phone number if available
+                        </span>
                       </p>
                     </div>
                   </div>
