@@ -260,13 +260,36 @@ function transformLinkedInData(linkedInProfile, userId) {
       .join('\n\n---\n\n');
   }
 
-  // Extract skills from skills array
+  // Extract skills from multiple sources: skills array, courses, and certifications
   let skills = [];
+  
+  // Primary skills from skills array
   if (linkedInProfile.skills && Array.isArray(linkedInProfile.skills)) {
-    skills = linkedInProfile.skills.map(skill => 
+    const primarySkills = linkedInProfile.skills.map(skill => 
       typeof skill === 'string' ? skill : skill.name || skill.title || ''
     ).filter(skill => skill.trim());
+    skills.push(...primarySkills);
   }
+  
+  // Additional skills from courses
+  if (linkedInProfile.courses && Array.isArray(linkedInProfile.courses)) {
+    const courseSkills = linkedInProfile.courses.map(course => 
+      typeof course === 'string' ? course : course.name || course.title || ''
+    ).filter(skill => skill.trim());
+    skills.push(...courseSkills);
+  }
+  
+  // Additional skills from certifications
+  if (linkedInProfile.certifications && Array.isArray(linkedInProfile.certifications)) {
+    const certificationSkills = linkedInProfile.certifications
+      .map(cert => typeof cert === 'string' ? cert : cert.name || cert.title || '')
+      .filter(skill => skill.trim())
+      .slice(0, 10); // Limit certifications to avoid too many skills
+    skills.push(...certificationSkills);
+  }
+  
+  // Remove duplicates and limit total skills
+  skills = [...new Set(skills)].slice(0, 25); // Remove duplicates and limit to 25 skills
 
   // Extract education from educations array  
   let education = '';
