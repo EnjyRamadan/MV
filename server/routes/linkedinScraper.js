@@ -126,7 +126,7 @@ router.post('/scrape-linkedin', async (req, res) => {
           const contactData = transformLinkedInData(profileData, userId);
 
           // Save contact to database
-          const Profile = require('../models/Profile'); // Adjust path as needed
+          const Profile = require('../models/profile'); // Adjust path as needed
           const savedContact = await Profile.create(contactData);
 
           results.successful++;
