@@ -1,4 +1,4 @@
-// routes/linkedinScraper.js - Updated to handle contact information
+// routes/linkedinScraper.js - Updated to handle phone information only
 const express = require('express');
 const router = express.Router();
 
@@ -25,7 +25,6 @@ router.post('/scrape-linkedin', async (req, res) => {
       profile.url && (profile.url.includes('linkedin.com/in/') || profile.url.includes('linkedin.com/pub/'))
     ).map(profile => ({
       url: profile.url.trim(),
-      email: (profile.email || '').trim(),
       phone: (profile.phone || '').trim()
     }));
 
@@ -52,7 +51,7 @@ router.post('/scrape-linkedin', async (req, res) => {
       results: []
     };
 
-    console.log(`Starting LinkedIn scraping for ${validProfiles.length} profiles with contact info`);
+    console.log(`Starting LinkedIn scraping for ${validProfiles.length} profiles with phone info`);
 
     try {
       // Start the Apify actor run with just URLs
@@ -128,8 +127,8 @@ router.post('/scrape-linkedin', async (req, res) => {
             throw new Error('No profile data received');
           }
 
-          // Transform LinkedIn data to our contact format, including user-provided contact info
-          const contactData = transformLinkedInDataWithContactInfo(profileData, userId, profileInput);
+          // Transform LinkedIn data to our contact format, including user-provided phone info
+          const contactData = transformLinkedInDataWithPhone(profileData, userId, profileInput);
 
           // Save contact using the existing profiles API endpoint
           const saveResponse = await fetch(`${process.env.BASE_URL || 'https://contactpro-backend.vercel.app'}/profiles`, {
@@ -155,7 +154,6 @@ router.post('/scrape-linkedin', async (req, res) => {
               name: contactData.name,
               jobTitle: contactData.jobTitle,
               company: contactData.company,
-              email: contactData.email,
               phone: contactData.phone
             }
           });
@@ -216,8 +214,8 @@ router.post('/scrape-linkedin', async (req, res) => {
   }
 });
 
-// Updated helper function to transform LinkedIn data with user-provided contact info
-function transformLinkedInDataWithContactInfo(linkedInProfile, userId, profileInput) {
+// Updated helper function to transform LinkedIn data with user-provided phone info only
+function transformLinkedInDataWithPhone(linkedInProfile, userId, profileInput) {
   if (!linkedInProfile) {
     throw new Error('No profile data received');
   }
@@ -399,8 +397,7 @@ function transformLinkedInDataWithContactInfo(linkedInProfile, userId, profileIn
   const location = linkedInProfile.geoLocationName || linkedInProfile.geoCountryName || 
                   linkedInProfile.positions?.[0]?.locationName || '';
 
-  // Use user-provided contact info as priority, fallback to LinkedIn data
-  const finalEmail = profileInput.email || linkedInProfile.email || '';
+  // Use user-provided phone info as priority, fallback to LinkedIn data
   const finalPhone = profileInput.phone || linkedInProfile.phone || '';
 
   return {
@@ -414,7 +411,7 @@ function transformLinkedInDataWithContactInfo(linkedInProfile, userId, profileIn
     skills,
     education,
     workExperience,
-    email: finalEmail, // Prioritize user-provided email
+    email: linkedInProfile.email || '', // Use LinkedIn email if available
     phone: finalPhone, // Prioritize user-provided phone
     avatar: linkedInProfile.pictureUrl || linkedInProfile.profilePicture || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
     uploadedBy: userId,

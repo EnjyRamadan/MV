@@ -35,11 +35,8 @@ const UploadPage: React.FC = () => {
   const [scrapingMode, setScrapingMode] = useState<'single' | 'bulk'>('single');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // New state for LinkedIn contact info
-  const [linkedinContactInfo, setLinkedinContactInfo] = useState({
-    email: '',
-    phone: ''
-  });
+  // Simplified state for LinkedIn contact info - phone only
+  const [linkedinPhone, setLinkedinPhone] = useState('');
 
   const [processingResults, setProcessingResults] = useState<{
     total: number;
@@ -119,7 +116,7 @@ const UploadPage: React.FC = () => {
     setIsProcessing(true);
     setProcessingResults(null);
 
-    let processedData: Array<{ url: string; email?: string; phone?: string }> = [];
+    let processedData: Array<{ url: string; phone?: string }> = [];
 
     try {
       if (scrapingMode === 'single') {
@@ -129,8 +126,7 @@ const UploadPage: React.FC = () => {
         }
         processedData = [{
           url: linkedinUrl.trim(),
-          email: linkedinContactInfo.email.trim(),
-          phone: linkedinContactInfo.phone.trim()
+          phone: linkedinPhone.trim()
         }];
       } else {
         // Handle CSV file upload
@@ -150,7 +146,6 @@ const UploadPage: React.FC = () => {
         // Parse CSV headers
         const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
         const urlIndex = headers.findIndex(h => h.includes('url'));
-        const emailIndex = headers.findIndex(h => h.includes('email'));
         const phoneIndex = headers.findIndex(h => h.includes('phone'));
 
         if (urlIndex === -1) {
@@ -164,7 +159,6 @@ const UploadPage: React.FC = () => {
           const columns = row.split(',').map(col => col.trim().replace(/"/g, ''));
           return {
             url: columns[urlIndex] || '',
-            email: emailIndex !== -1 ? columns[emailIndex] || '' : '',
             phone: phoneIndex !== -1 ? columns[phoneIndex] || '' : ''
           };
         }).filter(item => 
@@ -187,14 +181,14 @@ const UploadPage: React.FC = () => {
       };
       setProcessingResults(initialResults);
 
-      // Call backend API for LinkedIn scraping with contact info
+      // Call backend API for LinkedIn scraping with phone info
       const response = await fetch('https://contactpro-backend.vercel.app/api/scrape-linkedin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          profilesData: processedData, // Changed from 'urls' to 'profilesData'
+          profilesData: processedData,
           userId: user.id
         })
       });
@@ -222,7 +216,7 @@ const UploadPage: React.FC = () => {
 
       // Reset form
       setLinkedinUrl('');
-      setLinkedinContactInfo({ email: '', phone: '' });
+      setLinkedinPhone('');
       setLinkedinFile(null);
 
     } catch (error) {
@@ -426,14 +420,13 @@ const UploadPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email *
+                  Email 
                 </label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="contact@email.com"
                 />
@@ -441,13 +434,14 @@ const UploadPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone 
+                  Phone *
                 </label>
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
+                  required
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="+1-555-0123"
                 />
@@ -525,10 +519,10 @@ const UploadPage: React.FC = () => {
                   <div className="text-sm text-blue-800">
                     <p className="font-medium mb-1">How it works:</p>
                     <ul className="list-disc list-inside space-y-1 text-blue-700">
-                      <li>Enter LinkedIn profile URL along with contact information (phone/email)</li>
-                      <li>Upload a CSV file with URLs and contact details for bulk processing</li>
+                      <li>Enter LinkedIn profile URL along with phone number</li>
+                      <li>Upload a CSV file with URLs and phone numbers for bulk processing</li>
                       <li>Our backend service will scrape the profiles securely</li>
-                      <li>Your provided contact info will be used if not available on LinkedIn</li>
+                      <li>Your provided phone number will be used if not available on LinkedIn</li>
                       <li>You earn 10 points for each successfully processed profile</li>
                     </ul>
                   </div>
@@ -548,7 +542,7 @@ const UploadPage: React.FC = () => {
                     onChange={(e) => setScrapingMode(e.target.value as 'single' | 'bulk')}
                     className="text-blue-600 focus:ring-blue-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">Single URL with Contact Info</span>
+                  <span className="text-sm font-medium text-gray-700">Single URL with Phone</span>
                 </label>
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -594,46 +588,26 @@ const UploadPage: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address *
-                      </label>
-                      <input
-                        type="email"
-                        value={linkedinContactInfo.email}
-                        onChange={(e) => setLinkedinContactInfo(prev => ({ ...prev, email: e.target.value }))}
-                        required
-                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="contact@email.com"
-                      />
-                     
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone Number
-                      </label>
-                      <input
-                        type="tel"
-                        value={linkedinContactInfo.phone}
-                        onChange={(e) => setLinkedinContactInfo(prev => ({ ...prev, phone: e.target.value }))}
-                       
-                        className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="+1-555-0123"
-                      />
-                      <p>
-                        <span className="text-xs text-gray-500">
-                          Optional: Provide phone number if available
-                        </span>
-                      </p>
-                    </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={linkedinPhone}
+                      onChange={(e) => setLinkedinPhone(e.target.value)}
+                      className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="+1-555-0123"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Optional: Provide phone number if available
+                    </p>
                   </div>
                 </div>
               ) : (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Upload CSV File with LinkedIn URLs and Contact Info
+                    Upload CSV File with LinkedIn URLs and Phone Numbers
                   </label>
                   <div className="relative">
                     <input
@@ -649,15 +623,15 @@ const UploadPage: React.FC = () => {
                   </p>
                   <div className="mt-2 p-3 bg-gray-50 rounded text-xs text-gray-600 font-mono">
                     <div className="font-semibold mb-1">CSV Format:</div>
-                    <div>url,email,phone</div>
-                    <div>https://www.linkedin.com/in/johnsmith/,john@email.com,+1-555-0001</div>
-                    <div>https://www.linkedin.com/in/janedoe/,jane@email.com,+1-555-0002</div>
-                    <div>https://www.linkedin.com/in/mikejohnson/,mike@email.com,+1-555-0003</div>
+                    <div>url,phone</div>
+                    <div>https://www.linkedin.com/in/johnsmith/,+1-555-0001</div>
+                    <div>https://www.linkedin.com/in/janedoe/,+1-555-0002</div>
+                    <div>https://www.linkedin.com/in/mikejohnson/,+1-555-0003</div>
                   </div>
                   <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded">
                     <p className="text-xs text-amber-700">
-                      <strong>Note:</strong> Email and phone columns are optional but recommended. 
-                      Leave them empty if not available - LinkedIn data will be used when possible.
+                      <strong>Note:</strong> Phone column is optional but recommended. 
+                      Leave it empty if not available - LinkedIn data will be used when possible.
                     </p>
                   </div>
                 </div>
@@ -757,7 +731,6 @@ const UploadPage: React.FC = () => {
                                 ✓ Successfully scraped: {result.data?.name || 'Profile data extracted'}
                                 {result.data?.jobTitle && ` - ${result.data.jobTitle}`}
                                 {result.data?.company && ` at ${result.data.company}`}
-                                {result.data?.email && ` | Email: ${result.data.email}`}
                                 {result.data?.phone && ` | Phone: ${result.data.phone}`}
                               </p>
                             ) : (
