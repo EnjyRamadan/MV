@@ -46,7 +46,7 @@ const Navbar: React.FC = () => {
           {/* Logo - Image + ContactPro Text */}
           <Link to="/dashboard" className="flex items-center space-x-3">
             <img
-              src="client/public/logo.jpg"
+              src="/logo.jpg"
               alt="ContactPro"
               className="h-10 w-auto" // Adjust height as needed (h-8, h-10, h-12)
             />
