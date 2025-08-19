@@ -4,7 +4,6 @@ import { useContacts } from '../contexts/ContactContext';
 import { useDashboard } from '../contexts/DashboardContext';
 import { Upload, FileText, Plus, User, Linkedin, Globe, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
-import { getDashboardForCurrentUser } from '../api/dashboardApi';
 
 const UploadPage: React.FC = () => {
   const { user } = useAuth();
@@ -106,155 +105,6 @@ const UploadPage: React.FC = () => {
     }
   };
 
-  // LinkedIn scraping functions
-  const scrapeLinkedInProfiles = async (profileUrls: string[]) => {
-    const apiToken = process.env.REACT_APP_APIFY_API_KEY;
-
-    // Debug: Check if API key is loaded
-    console.log('API Token loaded:', apiToken ? 'Yes' : 'No');
-    console.log('API Token length:', apiToken?.length || 0);
-    
-    if (!apiToken) {
-      throw new Error('API token not found. Please check your .env file.');
-    }
-
-    try {
-      // First, start the actor run
-      const runResponse = await fetch(`https://api.apify.com/v2/acts/supreme_coder~linkedin-profile-scraper/runs?token=${apiToken}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          urls: profileUrls.map(url => ({ url })),
-          "findContacts.contactCompassToken": ""
-        })
-      });
-
-      if (!runResponse.ok) {
-        throw new Error(`API request failed: ${runResponse.status} ${runResponse.statusText}`);
-      }
-
-      const runData = await runResponse.json();
-      const runId = runData.data.id;
-
-      // Wait for the run to finish
-      let runStatus = 'RUNNING';
-      while (runStatus === 'RUNNING') {
-        await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
-        
-        const statusResponse = await fetch(`https://api.apify.com/v2/acts/supreme_coder~linkedin-profile-scraper/runs/${runId}?token=${apiToken}`);
-        const statusData = await statusResponse.json();
-        runStatus = statusData.data.status;
-      }
-
-      if (runStatus !== 'SUCCEEDED') {
-        throw new Error(`Scraping failed with status: ${runStatus}`);
-      }
-
-      // Get the dataset items
-      const datasetId = runData.data.defaultDatasetId;
-      const itemsResponse = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`);
-      
-      if (!itemsResponse.ok) {
-        throw new Error(`Failed to fetch results: ${itemsResponse.status} ${itemsResponse.statusText}`);
-      }
-
-      const items = await itemsResponse.json();
-      return items;
-    } catch (error) {
-      console.error('Error scraping LinkedIn profiles:', error);
-      throw error;
-    }
-  };
-
-  const transformLinkedInData = (linkedInProfile: any) => {
-    // Transform the LinkedIn API response to match our contact format
-    if (!linkedInProfile) {
-      throw new Error('No profile data received');
-    }
-
-    // Extract work experience description
-    let workExperience = '';
-    if (linkedInProfile.experiences && linkedInProfile.experiences.length > 0) {
-      workExperience = linkedInProfile.experiences
-        .map((exp: any) => `${exp.title || ''} at ${exp.company || ''}: ${exp.description || 'No description available'}`)
-        .join('\n\n');
-    }
-
-    // Extract skills
-    let skills: string[] = [];
-    if (linkedInProfile.skills && Array.isArray(linkedInProfile.skills)) {
-      skills = linkedInProfile.skills.map((skill: any) => 
-        typeof skill === 'string' ? skill : skill.name || skill.title || ''
-      ).filter((skill: string) => skill.trim());
-    }
-
-    // Extract education
-    let education = '';
-    if (linkedInProfile.educations && linkedInProfile.educations.length > 0) {
-      education = linkedInProfile.educations
-        .map((edu: any) => `${edu.degree || edu.fieldOfStudy || ''} at ${edu.school || ''}`)
-        .filter((edu: string) => edu.trim())
-        .join('; ');
-    }
-
-    // Determine industry from profile data
-    let industry = linkedInProfile.industry || 'Other';
-    if (linkedInProfile.experiences && linkedInProfile.experiences.length > 0) {
-      const currentExperience = linkedInProfile.experiences[0];
-      if (currentExperience.companyIndustry) {
-        industry = currentExperience.companyIndustry;
-      }
-    }
-
-    // Calculate experience years
-    let experienceYears = 0;
-    if (linkedInProfile.experiences && linkedInProfile.experiences.length > 0) {
-      // Simple calculation based on first position
-      const firstExperience = linkedInProfile.experiences[0];
-      if (firstExperience.startDate) {
-        const startYear = new Date(firstExperience.startDate).getFullYear();
-        const currentYear = new Date().getFullYear();
-        experienceYears = currentYear - startYear;
-      }
-    }
-
-    // Determine seniority level based on job title
-    const jobTitle = linkedInProfile.experiences?.[0]?.title || linkedInProfile.jobTitle || '';
-    let seniorityLevel = 'Mid-level';
-    const titleLower = jobTitle.toLowerCase();
-    if (titleLower.includes('senior') || titleLower.includes('lead')) {
-      seniorityLevel = 'Senior';
-    } else if (titleLower.includes('director')) {
-      seniorityLevel = 'Director';
-    } else if (titleLower.includes('vp') || titleLower.includes('vice president')) {
-      seniorityLevel = 'VP';
-    } else if (titleLower.includes('ceo') || titleLower.includes('cto') || titleLower.includes('cfo')) {
-      seniorityLevel = 'C-Level';
-    } else if (titleLower.includes('junior') || experienceYears < 2) {
-      seniorityLevel = 'Entry-level';
-    }
-
-    return {
-      name: `${linkedInProfile.firstName || ''} ${linkedInProfile.lastName || ''}`.trim() || linkedInProfile.fullName || '',
-      jobTitle,
-      company: linkedInProfile.experiences?.[0]?.company || linkedInProfile.company || '',
-      location: linkedInProfile.location || '',
-      industry,
-      experience: Math.max(0, experienceYears),
-      seniorityLevel,
-      skills,
-      education,
-      workExperience,
-      email: linkedInProfile.email || '', // Profile might not provide email
-      phone: linkedInProfile.phone || '', // Profile might not provide phone
-      avatar: linkedInProfile.profilePicture || linkedInProfile.avatar || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-      uploadedBy: user?.id || '',
-      companySize: '',
-    };
-  };
-
   const handleLinkedInScraping = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -292,84 +142,47 @@ const UploadPage: React.FC = () => {
         }
       }
 
-      const results = {
+      // Initialize processing results
+      const initialResults = {
         total: urlsToProcess.length,
         processed: 0,
         successful: 0,
         failed: 0,
-        results: [] as Array<{ url: string; status: 'success' | 'failed'; data?: any; error?: string }>
+        results: []
       };
+      setProcessingResults(initialResults);
 
-      setProcessingResults({ ...results });
+      // Call backend API for LinkedIn scraping
+      const response = await fetch('https://contactpro-backend.vercel.app/api/scrape-linkedin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          urls: urlsToProcess,
+          userId: user.id
+        })
+      });
 
-      try {
-        // Scrape all LinkedIn profiles at once
-        const linkedInData = await scrapeLinkedInProfiles(urlsToProcess);
-
-        // Process each profile result
-        for (let i = 0; i < urlsToProcess.length; i++) {
-          const url = urlsToProcess[i];
-          const profileData = linkedInData[i];
-
-          try {
-            results.processed++;
-            setProcessingResults({ ...results });
-
-            if (!profileData) {
-              throw new Error('No profile data received');
-            }
-
-            // Transform data to our format
-            const contactData = transformLinkedInData(profileData);
-
-            // Save to backend
-            const res = await fetch('https://contactpro-backend.vercel.app/profiles', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(contactData)
-            });
-
-            if (!res.ok) throw new Error('Failed to save contact');
-
-            results.successful++;
-            results.results.push({ url, status: 'success', data: contactData });
-
-          } catch (error) {
-            console.error(`Error processing ${url}:`, error);
-            results.failed++;
-            results.results.push({ 
-              url, 
-              status: 'failed', 
-              error: error instanceof Error ? error.message : 'Unknown error'
-            });
-          }
-
-          // Update results after each profile
-          setProcessingResults({ ...results });
-        }
-      } catch (error) {
-        // If the entire scraping process fails, mark all as failed
-        for (const url of urlsToProcess) {
-          results.processed++;
-          results.failed++;
-          results.results.push({ 
-            url, 
-            status: 'failed', 
-            error: error instanceof Error ? error.message : 'Scraping service failed'
-          });
-        }
-        setProcessingResults({ ...results });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to parse error response' }));
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
+
+      const result = await response.json();
+      
+      // Update processing results with final data
+      setProcessingResults(result.results);
 
       // Refresh dashboard to update points
       await refreshDashboard();
 
-      // Show final results
-      if (results.successful > 0) {
-        toast.success(`Successfully processed ${results.successful} profiles! +${results.successful * 10} points`);
+      // Show success/failure messages
+      if (result.results.successful > 0) {
+        toast.success(`Successfully processed ${result.results.successful} profiles! +${result.pointsEarned} points`);
       }
-      if (results.failed > 0) {
-        toast.error(`Failed to process ${results.failed} profiles`);
+      if (result.results.failed > 0) {
+        toast.error(`Failed to process ${result.results.failed} profiles`);
       }
 
       // Reset form
@@ -378,7 +191,24 @@ const UploadPage: React.FC = () => {
 
     } catch (error) {
       console.error('LinkedIn scraping error:', error);
-      toast.error('Failed to process LinkedIn profiles');
+      
+      // Update results to show all failed
+      if (urlsToProcess.length > 0) {
+        const failedResults = {
+          total: urlsToProcess.length,
+          processed: urlsToProcess.length,
+          successful: 0,
+          failed: urlsToProcess.length,
+          results: urlsToProcess.map(url => ({
+            url,
+            status: 'failed' as const,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          }))
+        };
+        setProcessingResults(failedResults);
+      }
+      
+      toast.error(error instanceof Error ? error.message : 'Failed to process LinkedIn profiles');
     } finally {
       setIsProcessing(false);
     }
@@ -659,8 +489,22 @@ const UploadPage: React.FC = () => {
                 <span>LinkedIn Profile Scraper</span>
               </h3>
               <p className="text-gray-600 mb-4">
-                Extract contact information from LinkedIn profiles automatically using the supreme_coder scraper. Each successfully processed profile earns you 10 points.
+                Extract contact information from LinkedIn profiles automatically. Each successfully processed profile earns you 10 points.
               </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start space-x-2">
+                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">How it works:</p>
+                    <ul className="list-disc list-inside space-y-1 text-blue-700">
+                      <li>Enter a single LinkedIn profile URL or upload a file with multiple URLs</li>
+                      <li>Our backend service will scrape the profiles securely</li>
+                      <li>Extracted data is automatically saved to your contact database</li>
+                      <li>You earn 10 points for each successfully processed profile</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Mode Selection */}
@@ -734,8 +578,13 @@ const UploadPage: React.FC = () => {
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Upload a TXT or CSV file with one LinkedIn URL per line
+                    Upload a TXT or CSV file with one LinkedIn URL per line. Example format:
                   </p>
+                  <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600 font-mono">
+                    https://www.linkedin.com/in/johnsmith/<br/>
+                    https://www.linkedin.com/in/janedoe/<br/>
+                    https://www.linkedin.com/in/mikejohnson/
+                  </div>
                 </div>
               )}
 
@@ -787,6 +636,24 @@ const UploadPage: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Progress Bar */}
+                {isProcessing && (
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm text-gray-600 mb-2">
+                      <span>Processing LinkedIn profiles...</span>
+                      <span>{processingResults.processed} / {processingResults.total}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${(processingResults.processed / processingResults.total) * 100}%`
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Detailed Results */}
                 {processingResults.results.length > 0 && (
                   <div className="space-y-2">
@@ -813,6 +680,8 @@ const UploadPage: React.FC = () => {
                             {result.status === 'success' ? (
                               <p className="text-sm text-green-700">
                                 ✓ Successfully scraped: {result.data?.name || 'Profile data extracted'}
+                                {result.data?.jobTitle && ` - ${result.data.jobTitle}`}
+                                {result.data?.company && ` at ${result.data.company}`}
                               </p>
                             ) : (
                               <p className="text-sm text-red-700">
@@ -822,24 +691,6 @@ const UploadPage: React.FC = () => {
                           </div>
                         </div>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Progress Bar */}
-                {isProcessing && (
-                  <div className="mt-4">
-                    <div className="flex justify-between text-sm text-gray-600 mb-2">
-                      <span>Processing...</span>
-                      <span>{processingResults.processed} / {processingResults.total}</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${(processingResults.processed / processingResults.total) * 100}%`
-                        }}
-                      />
                     </div>
                   </div>
                 )}

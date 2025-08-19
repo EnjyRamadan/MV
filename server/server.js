@@ -91,12 +91,18 @@ app.get('/health', (req, res) => {
     database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
+
 const dashboardRoutes = require('./routes/dashboardRoutes');
+
 // API Routes with error boundary
 try {
   app.use('/auth', require('./routes/auth'));
   app.use('/api/dashboard', dashboardRoutes);
   app.use('/profiles', require('./routes/profileRoutes'));
+  
+  // NEW: LinkedIn scraper routes
+  app.use('/api', require('./routes/linkedinScraper'));
+  
 } catch (routeError) {
   console.error('Route loading error:', routeError);
 }
@@ -191,6 +197,9 @@ const startServer = async () => {
     if (!isProduction) {
       const server = app.listen(PORT, () => {
         console.log(`🚀 Server running on http://localhost:${PORT}`);
+        console.log(`📊 Dashboard API: http://localhost:${PORT}/api/dashboard`);
+        console.log(`👥 Profiles API: http://localhost:${PORT}/profiles`);
+        console.log(`🔗 LinkedIn Scraper API: http://localhost:${PORT}/api/scrape-linkedin`);
       });
       
       server.on('error', (err) => {
