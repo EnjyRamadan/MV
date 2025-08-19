@@ -306,14 +306,14 @@ const UploadPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Company *
+                  Company 
                 </label>
                 <input
                   type="text"
                   name="company"
                   value={formData.company}
                   onChange={handleInputChange}
-                  required
+                
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="e.g. Google, Microsoft"
                 />
@@ -321,14 +321,14 @@ const UploadPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Location *
+                  Location 
                 </label>
                 <input
                   type="text"
                   name="location"
                   value={formData.location}
                   onChange={handleInputChange}
-                  required
+                  
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="e.g. San Francisco, CA"
                 />
@@ -336,13 +336,13 @@ const UploadPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Industry *
+                  Industry 
                 </label>
                 <select
                   name="industry"
                   value={formData.industry}
                   onChange={handleInputChange}
-                  required
+                 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select industry</option>
@@ -357,14 +357,14 @@ const UploadPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Years of Experience *
+                  Years of Experience 
                 </label>
                 <input
                   type="number"
                   name="experience"
                   value={formData.experience}
                   onChange={handleInputChange}
-                  required
+                 
                   min={0}
                   max={50}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -374,13 +374,13 @@ const UploadPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Seniority Level *
+                  Seniority Level 
                 </label>
                 <select
                   name="seniorityLevel"
                   value={formData.seniorityLevel}
                   onChange={handleInputChange}
-                  required
+                 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">Select level</option>
@@ -410,14 +410,14 @@ const UploadPage: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone *
+                  Phone 
                 </label>
                 <input
                   type="tel"
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
-                  required
+                 
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="+1-555-0123"
                 />
@@ -426,14 +426,14 @@ const UploadPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Skills (comma-separated) *
+                Skills (comma-separated) 
               </label>
               <input
                 type="text"
                 name="skills"
                 value={formData.skills}
                 onChange={handleInputChange}
-                required
+                
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g. React, Node.js, Python, AWS"
               />
@@ -441,14 +441,14 @@ const UploadPage: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Education *
+                Education 
               </label>
               <input
                 type="text"
                 name="education"
                 value={formData.education}
                 onChange={handleInputChange}
-                required
+               
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g. BS Computer Science, Stanford University"
               />
