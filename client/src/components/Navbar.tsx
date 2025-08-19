@@ -17,7 +17,7 @@ import {
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
-  const { dashboard } = useDashboard(); // Use dashboard context instead of separate API call
+  const { dashboard } = useDashboard();
   const location = useLocation();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -37,22 +37,25 @@ const Navbar: React.FC = () => {
     navigate('/');
   };
 
-  // Get points from dashboard context - this will update automatically
   const availablePoints = dashboard?.availablePoints || 0;
 
   return (
     <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/dashboard" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-white" />
-            </div>
+          {/* Logo - Image + ContactPro Text */}
+          <Link to="/dashboard" className="flex items-center space-x-3">
+            <img
+              src="/client/src/public/logo.jpg"
+              alt="ContactPro"
+              className="h-10 w-auto" // Adjust height as needed (h-8, h-10, h-12)
+            />
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               ContactPro
             </span>
           </Link>
+
+
 
           {/* Navigation Links */}
           <div className="hidden md:flex items-center space-x-8">
@@ -112,9 +115,6 @@ const Navbar: React.FC = () => {
                   </p>
                   <p className="text-xs text-gray-500">{user?.email}</p>
                 </div>
-                
-                {/* Show additional dashboard info in dropdown */}
-                
 
                 <button
                   onClick={handleLogout}
