@@ -33,6 +33,7 @@ const UploadPage: React.FC = () => {
   // LinkedIn scraping data
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [linkedinFile, setLinkedinFile] = useState<File | null>(null);
+  const [linkedinCookies, setLinkedinCookies] = useState('');
   const [scrapingMode, setScrapingMode] = useState<'single' | 'bulk'>('single');
   const [isProcessing, setIsProcessing] = useState(false);
   const [processingResults, setProcessingResults] = useState<{
@@ -109,18 +110,29 @@ const UploadPage: React.FC = () => {
   // LinkedIn scraping functions
   const scrapeLinkedInProfile = async (profileUrl: string) => {
     const apiUrl = 'https://api.apify.com/v2/acts/curious_coder~linkedin-profile-scraper/run-sync-get-dataset-items';
-    const apiKey = process.env.REACT_APP_APIFY_API_KEY;
+    const apiToken = process.env.REACT_APP_APIFY_API_KEY;
+
+    // Debug: Check if API key is loaded
+    console.log('API Token loaded:', apiToken ? 'Yes' : 'No');
+    console.log('API Token length:', apiToken?.length || 0);
+    
+    if (!apiToken) {
+      throw new Error('API token not found. Please check your .env file.');
+    }
 
     try {
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`${apiUrl}?token=${apiToken}`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          profileUrls: [profileUrl],
-          // Add any other required parameters for the scraper
+          startUrls: [{ url: profileUrl }],
+          // LinkedIn cookies are required for this scraper to work
+          linCookies: linkedinCookies || "",
+          proxy: {
+            useApifyProxy: true
+          }
         })
       });
 
@@ -227,6 +239,20 @@ const UploadPage: React.FC = () => {
   const handleLinkedInScraping = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+
+    // Validate cookies
+    if (!linkedinCookies.trim()) {
+      toast.error('LinkedIn cookies are required. Please paste your cookies in JSON format.');
+      return;
+    }
+
+    // Try to validate JSON format
+    try {
+      JSON.parse(linkedinCookies);
+    } catch {
+      toast.error('Invalid JSON format for cookies. Please check your cookies format.');
+      return;
+    }
 
     setIsProcessing(true);
     setProcessingResults(null);
@@ -617,15 +643,34 @@ const UploadPage: React.FC = () => {
                 <div className="flex items-start space-x-2">
                   <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
                   <div>
-                    <p className="text-sm text-amber-800 font-medium">Important Notes:</p>
+                    <p className="text-sm text-amber-800 font-medium">Important: LinkedIn Cookies Required</p>
                     <ul className="text-sm text-amber-700 mt-1 space-y-1">
-                      <li>• LinkedIn URLs should be in format: https://www.linkedin.com/in/username/</li>
-                      <li>• Email and phone may not be available due to LinkedIn privacy settings</li>
-                      <li>• Processing may take a few seconds per profile</li>
-                      <li>• Some profiles may be private or unavailable</li>
+                      <li>• This scraper requires LinkedIn session cookies to access profiles</li>
+                      <li>• You must be logged into LinkedIn and extract your cookies</li>
+                      <li>• Install Cookie-Editor extension, login to LinkedIn, export cookies</li>
+                      <li>• Paste the cookies in JSON format in the field below</li>
+                      <li>• Without cookies, the API will return 401 errors</li>
                     </ul>
                   </div>
                 </div>
+              </div>
+
+              {/* LinkedIn Cookies Input */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  LinkedIn Cookies (Required) *
+                </label>
+                <textarea
+                  value={linkedinCookies}
+                  onChange={(e) => setLinkedinCookies(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                  placeholder='[{"name":"JSESSIONID","value":"ajax:123...","domain":".linkedin.com"}]'
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Export your LinkedIn cookies in JSON format using Cookie-Editor extension
+                </p>
               </div>
             </div>
 
@@ -658,6 +703,24 @@ const UploadPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleLinkedInScraping} className="space-y-6">
+              {/* LinkedIn Cookies Input - Always show this first */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  LinkedIn Cookies (Required) *
+                </label>
+                <textarea
+                  value={linkedinCookies}
+                  onChange={(e) => setLinkedinCookies(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+                  placeholder='[{"name":"JSESSIONID","value":"ajax:123...","domain":".linkedin.com"}]'
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Export your LinkedIn cookies in JSON format using Cookie-Editor extension
+                </p>
+              </div>
+
               {scrapingMode === 'single' ? (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -668,12 +731,22 @@ const UploadPage: React.FC = () => {
                     <input
                       type="url"
                       value={linkedinUrl}
-                      onChange={(e) => setLinkedinUrl(e.target.value)}
+                      onChange={(e) => {
+                        let value = e.target.value.trim();
+                        // Auto-add https:// if missing
+                        if (value && !value.startsWith('http://') && !value.startsWith('https://')) {
+                          value = 'https://' + value;
+                        }
+                        setLinkedinUrl(value);
+                      }}
                       className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://www.linkedin.com/in/username/"
+                      placeholder="www.linkedin.com/in/username/ or https://www.linkedin.com/in/username/"
                       required
                     />
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    You can enter with or without https:// - we'll add it automatically
+                  </p>
                 </div>
               ) : (
                 <div>
@@ -697,7 +770,7 @@ const UploadPage: React.FC = () => {
 
               <button
                 type="submit"
-                disabled={isProcessing}
+                disabled={isProcessing || !linkedinCookies.trim()}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
