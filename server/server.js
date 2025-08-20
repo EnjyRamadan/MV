@@ -148,7 +148,6 @@ const connectDB = async () => {
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
       maxPoolSize: 10,
-      bufferCommands: false
     };
 
     await mongoose.connect(process.env.MONGO_URI, options);
