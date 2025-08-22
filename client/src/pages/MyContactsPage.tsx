@@ -390,22 +390,22 @@ const MyContactsPage: React.FC = () => {
                     </div>
 
                     {/* Skills Preview */}
-                    <div className="flex items-center flex-nowrap gap-1 overflow-x-auto">
-                      {contact.skills.map((skill, index) => (
+                    <div className="flex flex-wrap gap-1">
+                      {contact.skills.slice(0, 2).map((skill, index) => (
                         <span
                           key={index}
-                          className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium mr-1 max-w-[110px] truncate"
-                          title={skill}
+                          className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium"
                         >
                           {skill}
                         </span>
                       ))}
-                      {contact.skills.length > 3 && (
-                        <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap">
-                          +{contact.skills.length - 3} skills
+                      {contact.skills.length > 2 && (
+                        <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                          +{contact.skills.length - 2} more
                         </span>
                       )}
                     </div>
+                  </div>
 
                   {/* Actions */}
                   <div className="px-6 pb-6">
