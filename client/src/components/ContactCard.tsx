@@ -131,7 +131,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
         
         {/* Skills */}
         <div className="mb-4">
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
             {contact.skills.slice(0, 3).map((skill, index) => (
               <span
                 key={index}
@@ -141,12 +141,13 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
               </span>
             ))}
             {contact.skills.length > 3 && (
-              <span className="whitespace-nowrap inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+              <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
                 +{contact.skills.length - 3} more
               </span>
             )}
           </div>
         </div>
+
 
 
         {/* Contact Info - Locked/Unlocked */}
