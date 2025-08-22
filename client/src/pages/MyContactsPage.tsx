@@ -390,22 +390,20 @@ const MyContactsPage: React.FC = () => {
                     </div>
 
                     {/* Skills Preview */}
-                    <div className="flex items-center gap-1">
-                      <div className="truncate max-w-[200px]">
-                        {contact.skills.slice(0, 3).map((skill, index) => (
-                          <span
-                            key={index}
-                            className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium mr-1"
-                          >
-                            {skill}
-                          </span>
-                        ))}
-                        {contact.skills.length > 3 && (
-                          <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
-                            +{contact.skills.length - 3} more
-                          </span>
-                        )}
-                      </div>
+                    <div className="flex items-center gap-1 whitespace-nowrap overflow-x-auto">
+                      {contact.skills.slice(0, 2).map((skill, index) => (
+                        <span
+                          key={index}
+                          className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium mr-1"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                      {contact.skills.length > 2 && (
+                        <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs">
+                          +{contact.skills.length - 2} skills
+                        </span>
+                      )}
                     </div>
 
                   {/* Actions */}
