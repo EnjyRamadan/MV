@@ -72,7 +72,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
+  <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1 flex flex-col h-full">
       {/* Profile Header */}
       <div className="p-6 pb-4">
         <div className="flex items-start space-x-4">
@@ -223,7 +223,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
       </div>
 
       {/* Actions */}
-      <div className="px-6 pb-6 flex space-x-3">
+  <div className="px-6 pb-6 flex space-x-3 mt-auto">
         <Link
           to={`/profile/${contact.id}`}
           className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-200 transition-colors flex items-center justify-center space-x-2"
