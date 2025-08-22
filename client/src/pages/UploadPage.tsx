@@ -495,7 +495,7 @@ const UploadPage: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white py-3 px-4 rounded-lg font-medium hover:from-[#0b07f0] hover:to-[#0b07f0] transition-all flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center space-x-2 hover:brightness-110 hover:scale-105 hover:shadow-lg"
             >
               <Plus className="w-5 h-5" />
               <span>Upload Contact (+10 points)</span>
@@ -639,7 +639,7 @@ const UploadPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white py-3 px-4 rounded-lg font-medium hover:from-[#0b07f0] hover:to-[#0b07f0] transition-all flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center space-x-2 hover:brightness-110 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
                   <>
