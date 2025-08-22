@@ -200,24 +200,6 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
             <p className="text-sm text-gray-600 text-center mb-4">
               Unlock to view email and phone number
             </p>
-
-            <button
-              onClick={handleUnlock}
-              disabled={!canUnlock}
-              className={`w-full py-3 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-                canUnlock
-                  ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 shadow-md hover:shadow-lg transform hover:scale-105'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              <Award className="w-4 h-4" />
-              <span>
-                {hasInsufficientPoints 
-                  ? `Need ${20 - availablePoints} more points`
-                  : 'Unlock for 20 Points'
-                }
-              </span>
-            </button>
           </div>
         )}
       </div>
@@ -233,23 +215,24 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
         </Link>
         
         {!contact.isUnlocked && (
-          <button
-            onClick={handleUnlock}
-            disabled={!canUnlock}
-            className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
-              canUnlock
-                ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 shadow-md hover:shadow-lg transform hover:scale-105'
-                : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            <Award className="w-4 h-4" />
-            <span>
-              {hasInsufficientPoints 
-                ? 'Insufficient Points'
-                : 'Unlock (20 pts)'
-              }
-            </span>
-          </button>
+        <button
+          onClick={handleUnlock}
+          disabled={!canUnlock}
+          className={`flex-1 whitespace-nowrap py-2 px-4 rounded-lg font-semibold transition-all flex items-center justify-center space-x-2 ${
+            canUnlock
+              ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white hover:from-purple-700 hover:to-purple-800 shadow-md hover:shadow-lg transform hover:scale-105'
+              : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+          }`}
+        >
+          <Award className="w-4 h-4" />
+          <span>
+            {hasInsufficientPoints 
+              ? 'Insufficient Points'
+              : 'Unlock (20 pts)'
+            }
+          </span>
+        </button>
+
         )}
       </div>
     </div>
