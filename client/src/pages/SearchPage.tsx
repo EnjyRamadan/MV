@@ -124,7 +124,7 @@ const SearchPage: React.FC = () => {
           </button>
           <button
             type="submit"
-            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
+            className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-6 py-3 rounded-lg font-medium hover:from-[#0b07f0] hover:to-[#0b07f0] transition-all"
           >
             Search
           </button>
@@ -206,7 +206,7 @@ const SearchPage: React.FC = () => {
               </p>
               <button
                 onClick={showAllContacts}
-                className="bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-purple-800 shadow-md hover:shadow-lg transition-all"
+                className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-6 py-2 rounded-lg font-medium hover:from-[#0b07f0] hover:to-[#0b07f0] shadow-md hover:shadow-lg transition-all"
               >
                 Show All Contacts ({contacts.length})
               </button>

@@ -27,6 +27,7 @@ const Navbar: React.FC = () => {
     { name: 'Search', href: '/search', icon: Search },
     { name: 'My Contacts', href: '/my-contacts', icon: Heart },
     { name: 'Upload', href: '/upload', icon: Upload },
+    { name: 'Magic Assistant', href: '/magic-assistant', icon: User },
     ...(user?.isAdmin
       ? [{ name: 'Admin', href: '/admin', icon: Settings }]
       : []),

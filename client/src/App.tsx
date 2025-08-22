@@ -8,6 +8,7 @@ import LandingPage from "./pages/LandingPage";
 import Dashboard from "./pages/Dashboard";
 import SearchPage from "./pages/SearchPage";
 import UploadPage from "./pages/UploadPage";
+import MagicAssistant from "./pages/MagicAssistant";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import MyContactsPage from "./pages/MyContactsPage"; // <-- Add this import
@@ -58,6 +59,15 @@ function AppRoutes() {
           <ProtectedRoute>
             <Navbar />
             <UploadPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/magic-assistant"
+        element={
+          <ProtectedRoute>
+            <Navbar />
+            <MagicAssistant />
           </ProtectedRoute>
         }
       />
