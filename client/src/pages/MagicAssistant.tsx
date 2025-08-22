@@ -24,12 +24,12 @@ const MagicAssistant: React.FC = () => {
         </p>
 
         <motion.button
-          whileHover={{ scale: 1.1, boxShadow: "0px 0px 20px rgba(59,130,246,0.6)" }}
-          whileTap={{ scale: 0.95 }}
-          className="mt-8 px-6 py-3 bg-gradient-to-r from-blue-600 to-sky-500 text-white rounded-xl font-medium shadow-lg"
+        disabled
+        className="mt-8 px-6 py-3 bg-gradient-to-r from-gray-400 to-gray-500 text-white rounded-xl font-medium shadow-lg cursor-not-allowed"
         >
-          Get Started
+        Coming Soon!
         </motion.button>
+
       </motion.div>
     </div>
   );

@@ -131,7 +131,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
         
         {/* Skills */}
         <div className="mb-4">
-          <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
+          <div className="flex items-center gap-1 whitespace-nowrap overflow-hidden text-ellipsis">
             {contact.skills.slice(0, 3).map((skill, index) => (
               <span
                 key={index}
@@ -147,6 +147,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
             )}
           </div>
         </div>
+
 
 
 
