@@ -324,20 +324,44 @@ const MyContactsPage: React.FC = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">
-                          {contact.name}
+                          {contact.name ? (
+                            contact.name
+                          ) : (
+                            <span className="italic text-gray-400">No name</span>
+                          )}
                         </h3>
+
                         <p className="text-blue-600 font-medium mb-2 text-sm">
-                          {contact.jobTitle}
+                          {contact.jobTitle ? (
+                            contact.jobTitle
+                          ) : (
+                            <span className="italic text-gray-400">No job title</span>
+                          )}
                         </p>
+
                         <div className="flex items-center space-x-1 text-gray-600 mb-1">
                           <Building className="w-3 h-3" />
-                          <span className="text-xs truncate">{contact.company}</span>
+                          <span className="text-xs truncate">
+                            {contact.company ? (
+                              contact.company
+                            ) : (
+                              <span className="italic text-gray-400">No company</span>
+                            )}
+                          </span>
                         </div>
+
                         <div className="flex items-center space-x-1 text-gray-600">
                           <MapPin className="w-3 h-3" />
-                          <span className="text-xs truncate">{contact.location}</span>
+                          <span className="text-xs truncate">
+                            {contact.location ? (
+                              contact.location
+                            ) : (
+                              <span className="italic text-gray-400">No location</span>
+                            )}
+                          </span>
                         </div>
                       </div>
+
                     </div>
                   </div>
 
