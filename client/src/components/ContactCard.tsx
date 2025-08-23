@@ -89,18 +89,35 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
           )}
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
-              {contact.name}
+              {contact.name ? (
+                contact.name
+              ) : (
+                <span className="italic text-gray-400">No name</span>
+              )}
             </h3>
+
             <p className="text-blue-600 font-medium mb-2">
-              {contact.jobTitle}
+              {contact.jobTitle ? (
+                contact.jobTitle
+              ) : (
+                <span className="italic text-gray-400">No job title</span>
+              )}
             </p>
             <div className="flex items-center space-x-1 text-gray-600 mb-1">
               <Building className="w-4 h-4" />
-              <span className="text-sm">{contact.company}</span>
+              {contact.company ? (
+                <span className="text-sm">{contact.company}</span>
+              ) : (
+                <span className="text-sm italic text-gray-400">No company</span>
+              )}
             </div>
             <div className="flex items-center space-x-1 text-gray-600">
               <MapPin className="w-4 h-4" />
-              <span className="text-sm">{contact.location}</span>
+              {contact.location ? (
+                <span className="text-sm">{contact.location}</span>
+              ) : (
+                <span className="text-sm italic text-gray-400">No location</span>
+              )}
             </div>
           </div>
         </div>
@@ -114,41 +131,50 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
         </div>
         
         {/* Work Experience Preview */}
-        {contact.workExperience && (
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-1 text-gray-700 mb-2">
-              <Briefcase className="w-4 h-4" />
-              <span className="text-sm font-medium">Work Experience</span>
-            </div>
+        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
+          <div className="flex items-center space-x-1 text-gray-700 mb-2">
+            <Briefcase className="w-4 h-4" />
+            <span className="text-sm font-medium">Work Experience</span>
+          </div>
+          {contact.workExperience ? (
             <p className="text-sm text-gray-600 line-clamp-2">
               {contact.workExperience.length > 100 
                 ? `${contact.workExperience.substring(0, 100)}...`
-                : contact.workExperience
-              }
+                : contact.workExperience}
             </p>
-          </div>
-        )}
+          ) : (
+            <p className="text-sm italic text-gray-400">No work experience</p>
+          )}
+        </div>
+
         
         {/* Skills */}
         <div className="mb-4">
           <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
-            {contact.skills.slice(0, 3).map((skill, index) => (
-              <span
-                key={index}
-                className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium truncate max-w-[100px]"
-                title={skill}
-              >
-                {skill}
-              </span>
-            ))}
+            {contact.skills && contact.skills.length > 0 ? (
+              <>
+                {contact.skills.slice(0, 3).map((skill, index) => (
+                  <span
+                    key={index}
+                    className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium truncate max-w-[100px]"
+                    title={skill}
+                  >
+                    {skill}
+                  </span>
+                ))}
 
-            {contact.skills.length > 3 && (
-              <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap">
-                +{contact.skills.length - 3} skills
-              </span>
+                {contact.skills.length > 3 && (
+                  <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap">
+                    +{contact.skills.length - 3} skills
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-sm italic text-gray-400">No skills</span>
             )}
           </div>
         </div>
+
 
 
 
