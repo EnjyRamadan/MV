@@ -131,16 +131,17 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
         
         {/* Skills */}
         <div className="mb-4">
-          <div className="flex items-center flex-nowrap gap-1 overflow-x-auto">
-            {contact.skills.map((skill, index) => (
+          <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
+            {contact.skills.slice(0, 3).map((skill, index) => (
               <span
                 key={index}
-                className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium mr-1 max-w-[110px] truncate"
+                className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium truncate max-w-[100px]"
                 title={skill}
               >
                 {skill}
               </span>
             ))}
+
             {contact.skills.length > 3 && (
               <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap">
                 +{contact.skills.length - 3} skills
@@ -148,6 +149,7 @@ const ContactCard: React.FC<ContactCardProps> = ({ contact }) => {
             )}
           </div>
         </div>
+
 
 
 

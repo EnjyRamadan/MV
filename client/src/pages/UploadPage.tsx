@@ -10,7 +10,7 @@ const UploadPage: React.FC = () => {
   const { addContact } = useContacts();
   const { dashboard, refreshDashboard } = useDashboard();
 
-  const [activeTab, setActiveTab] = useState<'single' | 'linkedin'>('single');
+  const [activeTab, setActiveTab] = useState<'single' | 'linkedin'>('linkedin');
 
   // Single upload form data
   const [formData, setFormData] = useState({
@@ -277,6 +277,17 @@ const UploadPage: React.FC = () => {
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="flex border-b border-gray-200">
+            <button
+            onClick={() => setActiveTab('linkedin')}
+            className={`flex-1 py-4 px-6 font-medium transition-colors flex items-center justify-center space-x-2 ${
+              activeTab === 'linkedin'
+                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <Linkedin className="w-5 h-5" />
+            <span>LinkedIn Scraper</span>
+          </button>
           <button
             onClick={() => setActiveTab('single')}
             className={`flex-1 py-4 px-6 font-medium transition-colors flex items-center justify-center space-x-2 ${
@@ -287,17 +298,6 @@ const UploadPage: React.FC = () => {
           >
             <User className="w-5 h-5" />
             <span>Manual Upload</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('linkedin')}
-            className={`flex-1 py-4 px-6 font-medium transition-colors flex items-center justify-center space-x-2 ${
-              activeTab === 'linkedin'
-                ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-500'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Linkedin className="w-5 h-5" />
-            <span>LinkedIn Scraper</span>
           </button>
         </div>
 

@@ -29,7 +29,7 @@ const LandingPage: React.FC = () => {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-2">
               <img
-              src="/logo.jpg"
+              src="/logo.png"
               alt="ContactPro"
               className="h-10 w-auto" // Adjust height as needed (h-8, h-10, h-12)
             />
