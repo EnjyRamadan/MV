@@ -349,63 +349,77 @@ const MyContactsPage: React.FC = () => {
                     </div>
                     
                     {/* Work Experience Preview */}
-                    {contact.workExperience && (
-                      <div className="mb-3 p-2 bg-gray-50 rounded-lg">
-                        <div className="flex items-center space-x-1 text-gray-700 mb-1">
-                          <Briefcase className="w-3 h-3" />
-                          <span className="text-xs font-medium">Experience</span>
-                        </div>
+                    <div className="mb-3 p-2 bg-gray-50 rounded-lg">
+                      <div className="flex items-center space-x-1 text-gray-700 mb-1">
+                        <Briefcase className="w-3 h-3" />
+                        <span className="text-xs font-medium">Experience</span>
+                      </div>
+                      {contact.workExperience ? (
                         <p className="text-xs text-gray-600 line-clamp-2">
                           {contact.workExperience.length > 80 
                             ? `${contact.workExperience.substring(0, 80)}...`
-                            : contact.workExperience
-                          }
+                            : contact.workExperience}
                         </p>
-                      </div>
-                    )}
+                      ) : (
+                        <p className="text-xs italic text-gray-400">No experience</p>
+                      )}
+                    </div>
+
                     
                     {/* Contact Info */}
                     <div className="space-y-2 mb-4 p-3 bg-green-50 rounded-lg border border-green-200">
-                      {contact.email && (
+                      {contact.email ? (
                         <div className="flex items-center space-x-2">
                           <Mail className="w-4 h-4 text-green-600" />
                           <span className="text-sm font-medium text-gray-700 truncate">
                             {contact.email}
                           </span>
                         </div>
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Mail className="w-4 h-4 text-green-600" />
+                          <span className="text-sm italic text-gray-400">No email</span>
+                        </div>
                       )}
-                      {contact.phone && (
+
+                      {contact.phone ? (
                         <div className="flex items-center space-x-2">
                           <Phone className="w-4 h-4 text-green-600" />
                           <span className="text-sm font-medium text-gray-700">
                             {contact.phone}
                           </span>
                         </div>
-                      )}
-                      {!contact.email && !contact.phone && (
-                        <div className="text-xs text-gray-500 italic text-center">
-                          No contact information available
+                      ) : (
+                        <div className="flex items-center space-x-2">
+                          <Phone className="w-4 h-4 text-green-600" />
+                          <span className="text-sm italic text-gray-400">No phone</span>
                         </div>
                       )}
                     </div>
 
                     {/* Skills Preview */}
-                    <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
-                      {contact.skills.slice(0, 2).map((skill, index) => (
-                        <span
-                          key={index}
-                          className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium truncate max-w-[100px]"
-                          title={skill}
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                      {contact.skills.length > 2 && (
-                        <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap">
-                          +{contact.skills.length - 2} skills
-                        </span>
-                      )}
-                    </div>
+                  <div className="flex items-center gap-1 overflow-hidden whitespace-nowrap">
+                    {contact.skills && contact.skills.length > 0 ? (
+                      <>
+                        {contact.skills.slice(0, 2).map((skill, index) => (
+                          <span
+                            key={index}
+                            className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-medium truncate max-w-[100px]"
+                            title={skill}
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                        {contact.skills.length > 2 && (
+                          <span className="inline-block bg-gray-100 text-gray-600 px-2 py-1 rounded text-xs whitespace-nowrap">
+                            +{contact.skills.length - 2} skills
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-xs italic text-gray-400">No skills</span>
+                    )}
+                  </div>
                   </div>
 
                   {/* Actions */}

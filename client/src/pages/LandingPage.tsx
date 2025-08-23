@@ -33,9 +33,6 @@ const LandingPage: React.FC = () => {
               alt="ContactPro"
               className="h-10 w-auto" // Adjust height as needed (h-8, h-10, h-12)
             />
-              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                dalily ai
-              </span>
             </div>
             <div className="flex items-center space-x-4">
               <button
@@ -46,7 +43,7 @@ const LandingPage: React.FC = () => {
               </button>
               <button
                 onClick={() => handleAuthClick('register')}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105"
+                className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-6 py-2 rounded-lg font-medium hover:from-[#0b07f0] hover:to-[#0b07f0] shadow-md hover:shadow-lg transition-all"
               >
                 Get Started
               </button>
@@ -61,7 +58,7 @@ const LandingPage: React.FC = () => {
           <div className="max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
               Find the Right
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
+              <span className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] bg-clip-text text-transparent block">
                 Professionals
               </span>
               Instantly
@@ -73,7 +70,7 @@ const LandingPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={() => handleAuthClick('register')}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 flex items-center space-x-2"
+                className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-6 py-2 rounded-lg font-medium hover:from-[#0b07f0] hover:to-[#0b07f0] shadow-md hover:shadow-lg transition-all"
               >
                 <span>Start Free Trial</span>
                 <ArrowRight className="w-5 h-5" />
@@ -148,7 +145,7 @@ const LandingPage: React.FC = () => {
       {/* CTA Section */}
       <section className="py-20">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-12 rounded-3xl shadow-2xl">
+          <div className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] p-12 rounded-3xl shadow-2xl">
             <h2 className="text-4xl font-bold text-white mb-6">
               Ready to Transform Your Networking?
             </h2>
