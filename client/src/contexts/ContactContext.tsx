@@ -28,6 +28,7 @@ export interface Contact {
   uploadedAt: Date;
   verified?: boolean;
   hasContactInfo?: boolean;
+  extraLinks?: string[];
 }
 
 export interface SearchFilters {
