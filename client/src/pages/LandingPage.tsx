@@ -1,20 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { Search, Users, Zap, Shield, ArrowRight, Chrome } from 'lucide-react';
-import AuthModal from '../components/AuthModal';
+import { Search, Users, Zap, Shield, Chrome, Mail, Phone } from 'lucide-react';
 
-const LandingPage: React.FC = () => {
+const LandingPage = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
 
   const handleAuthClick = (mode: 'login' | 'register') => {
     setAuthMode(mode);
@@ -29,10 +18,10 @@ const LandingPage: React.FC = () => {
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-2">
               <img
-              src="/logo.png"
-              alt="ContactPro"
-              className="h-10 w-auto" // Adjust height as needed (h-8, h-10, h-12)
-            />
+                src="/logo.png"
+                alt="Logo"
+                className="h-10 w-auto"
+              />
             </div>
             <div className="flex items-center space-x-4">
               <button
@@ -43,7 +32,7 @@ const LandingPage: React.FC = () => {
               </button>
               <button
                 onClick={() => handleAuthClick('register')}
-                className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-6 py-2 rounded-lg font-medium hover:from-[#0b07f0] hover:to-[#0b07f0] shadow-md hover:shadow-lg transition-all"
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 shadow-md hover:shadow-lg transition-all"
               >
                 Get Started
               </button>
@@ -67,21 +56,6 @@ const LandingPage: React.FC = () => {
               The most advanced B2B contact search platform with AI-powered matching,
               collaborative data sharing, and intelligent points system.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <button
-                onClick={() => handleAuthClick('register')}
-                className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-8 py-4 rounded-xl font-semibold text-lg hover:scale-105 flex items-center space-x-2 shadow-md hover:shadow-lg transition-all"
-              >
-                <span>Start Free Trial</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleAuthClick('login')}
-                className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:border-gray-400 hover:bg-white transition-all duration-200"
-              >
-                Watch Demo
-              </button>
-            </div>
           </div>
         </div>
       </section>
@@ -142,35 +116,103 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20">
-        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-12">
+            {/* Logo and Description */}
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <img
+                  src="/logo.png"
+                  alt="Logo"
+                  className="h-10 w-auto"
+                />
+              </div>
+              <p className="text-gray-400 leading-relaxed">
+                The most advanced B2B contact search platform with AI-powered matching and collaborative data sharing.
+              </p>
+            </div>
 
-          <div className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] p-12 rounded-3xl shadow-2xl">
-            <h2 className="text-4xl font-bold text-white mb-6">
-              Ready to Transform Your Networking?
-            </h2>
-            <p className="text-xl text-blue-100 mb-8">
-              Join thousands of professionals already using ConnectPro
+            {/* Contact Information */}
+            <div>
+              <h3 className="text-lg font-semibold mb-6">Contact Us</h3>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Email Us</p>
+                    <a href="mailto:support@contactpro.com" className="text-blue-400 hover:text-blue-300 transition-colors">
+                      zein@dalilyai.com
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                    <Phone className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Call Us</p>
+                    <a href="tel:+1-555-0123" className="text-green-400 hover:text-green-300 transition-colors">
+                      +20 11 16114347
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-lg font-semibold mb-6">Quick Links</h3>
+              <div className="space-y-3">
+                <a href="#" className="block text-gray-400 hover:text-white transition-colors">
+                  About Us
+                </a>
+                <a href="#" className="block text-gray-400 hover:text-white transition-colors">
+                  Privacy Policy
+                </a>
+                <a href="#" className="block text-gray-400 hover:text-white transition-colors">
+                  Terms of Service
+                </a>
+                <a href="#" className="block text-gray-400 hover:text-white transition-colors">
+                  Help Center
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Border */}
+          <div className="border-t border-gray-800 mt-12 pt-8 text-center">
+            <p className="text-gray-400">
+              © 2024 dalily.ai All rights reserved.
             </p>
-            <button
-              onClick={() => handleAuthClick('register')}
-              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all duration-200 transform hover:scale-105 flex items-center space-x-2 mx-auto"
-            >
-              <Chrome className="w-5 h-5" />
-              <span>Sign up with Google</span>
-            </button>
           </div>
         </div>
-      </section>
+      </footer>
 
-      {/* Auth Modal */}
+      {/* Auth Modal Placeholder */}
       {showAuthModal && (
-        <AuthModal
-          mode={authMode}
-          onClose={() => setShowAuthModal(false)}
-          onSwitchMode={(mode) => setAuthMode(mode)}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-auto">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                {authMode === 'login' ? 'Sign In' : 'Get Started'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Authentication modal would appear here
+              </p>
+              <button
+                onClick={() => setShowAuthModal(false)}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
