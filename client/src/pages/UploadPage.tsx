@@ -125,7 +125,7 @@ const UploadPage: React.FC = () => {
     setIsProcessing(true);
     setProcessingResults(null);
 
-    let processedData: Array<{ url: string; phone?: string }> = [];
+    let processedData: Array<{ url: string; phone?: string; extraLinks?: string[] }> = [];
 
     try {
       if (scrapingMode === 'single') {
@@ -135,7 +135,8 @@ const UploadPage: React.FC = () => {
         }
         processedData = [{
           url: linkedinUrl.trim(),
-          phone: linkedinPhone.trim()
+          phone: linkedinPhone.trim(),
+          extraLinks: linkedinExtraLinks ? linkedinExtraLinks.split(',').map(s => s.trim()).filter(Boolean) : []
         }];
       } else {
         // Handle CSV file upload
