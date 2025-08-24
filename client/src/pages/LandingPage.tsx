@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Search, Users, Zap, Shield, Mail, Phone, ArrowRight} from 'lucide-react';
+import { Search, Users, Zap, Shield, Mail, Phone, ArrowRight, Star, Unlock} from 'lucide-react';
 import AuthModal from '../components/AuthModal';
 
 const LandingPage: React.FC = () => {
@@ -93,51 +93,54 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Powerful Features for Modern Teams
+              Why Choose dalilyal ?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              The smartest way to grow your professional network
+            </p>
+            <p className="text-lg text-gray-500 max-w-3xl mx-auto mt-2">
               Everything you need to find, manage, and connect with the right professionals
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center mb-4">
-                <Search className="w-6 h-6 text-white" />
+            <div className="bg-blue-50 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mb-6">
+                <Star className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Earn Points</h3>
+              <p className="text-gray-600">
+                Add verified contacts and earn points. Build your network while helping others.
+              </p>
+            </div>
+
+            <div className="bg-purple-50 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="w-16 h-16 bg-purple-500 rounded-full flex items-center justify-center mb-6">
+                <Unlock className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Unlock Access</h3>
+              <p className="text-gray-600">
+                Spend points to unlock real professional data. Get direct contact information.
+              </p>
+            </div>
+
+            <div className="bg-orange-50 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center mb-6">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">Accurate Data</h3>
+              <p className="text-gray-600">
+                Community-validated contacts ensure high accuracy and up-to-date information.
+              </p>
+            </div>
+
+            <div className="bg-green-50 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-6">
+                <Zap className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">Advanced Search</h3>
               <p className="text-gray-600">
                 LinkedIn-style filters with AI-powered matching and boolean search operators
-              </p>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Collaborative Data</h3>
-              <p className="text-gray-600">
-                Share and access contacts uploaded by your team with smart points system
-              </p>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Smart Points</h3>
-              <p className="text-gray-600">
-                Earn points by uploading contacts, spend to unlock premium contact details
-              </p>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-              <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">Enterprise Security</h3>
-              <p className="text-gray-600">
-                GDPR compliant with enterprise-grade security and access controls
               </p>
             </div>
           </div>
