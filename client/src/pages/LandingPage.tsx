@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
-import { Search, Users, Zap, Shield, Chrome, Mail, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { Search, Users, Zap, Shield, Mail, Phone } from 'lucide-react';
+import AuthModal from '../components/AuthModal';
 
-const LandingPage = () => {
+const LandingPage: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleAuthClick = (mode: 'login' | 'register') => {
     setAuthMode(mode);
@@ -193,26 +204,13 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      {/* Auth Modal Placeholder */}
+            {/* Auth Modal */}
       {showAuthModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-xl p-8 max-w-md w-full mx-auto">
-            <div className="text-center">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                {authMode === 'login' ? 'Sign In' : 'Get Started'}
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Authentication modal would appear here
-              </p>
-              <button
-                onClick={() => setShowAuthModal(false)}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+        <AuthModal
+          mode={authMode}
+          onClose={() => setShowAuthModal(false)}
+          onSwitchMode={(mode) => setAuthMode(mode)}
+        />
       )}
     </div>
   );
