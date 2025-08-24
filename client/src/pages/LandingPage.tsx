@@ -56,7 +56,7 @@ const LandingPage: React.FC = () => {
       <section className="relative py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
+            <h1 className="text-4xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
               Get Real Contacts for Free.
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
                 Share Your Professional Data, Unlock a World of Opportunities.
@@ -67,19 +67,22 @@ const LandingPage: React.FC = () => {
               Join Thousands of professionals exchanging verified contacts daily. Earn points by sharing, unlock valuable leads for your business.
             </p>
           </div>
-                        <button
-                onClick={() => handleAuthClick('register')}
-                className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-8 py-4 rounded-xl font-semibold text-lg hover:scale-105 flex items-center space-x-2 shadow-md hover:shadow-lg transition-all"
-              >
-                <span>Start now to get free credits</span>
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => handleAuthClick('login')}
-                className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:border-gray-400 hover:bg-white transition-all duration-200"
-              >
-                Start exchanging for free
-              </button>
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+            <button
+              onClick={() => handleAuthClick('register')}
+              className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-8 py-4 rounded-xl font-semibold text-lg hover:scale-105 flex items-center space-x-2 shadow-md hover:shadow-lg transition-all"
+            >
+              <span>Start now to get free credits</span>
+              <ArrowRight className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={() => handleAuthClick('login')}
+              className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:border-gray-400 hover:bg-white transition-all duration-200"
+            >
+              Start exchanging for free
+            </button>
+          </div>
         </div>
       </section>
 
