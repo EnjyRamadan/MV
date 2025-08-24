@@ -221,6 +221,9 @@ function transformLinkedInDataWithPhone(linkedInProfile, userId, profileInput) {
     throw new Error('No profile data received');
   }
 
+  // Ensure extraLinks are properly handled from profileInput
+  const extraLinks = Array.isArray(profileInput.extraLinks) ? profileInput.extraLinks.filter(Boolean) : [];
+
   // Extract work experience description from positions array
   let workExperience = '';
   if (linkedInProfile.positions && linkedInProfile.positions.length > 0) {
