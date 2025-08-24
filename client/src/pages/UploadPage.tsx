@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useContacts } from '../contexts/ContactContext';
 import { useDashboard } from '../contexts/DashboardContext';
-import { Upload, FileText, Plus, User, Linkedin, Globe, AlertCircle, CheckCircle, Loader } from 'lucide-react';
+import { Upload, FileText, Plus, User, Linkedin, Globe, AlertCircle, CheckCircle, Loader,Download } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 const UploadPage: React.FC = () => {
@@ -282,9 +282,10 @@ const UploadPage: React.FC = () => {
     }
   };
     const exampleCSV = `url,phone,links
-    https://www.linkedin.com/in/johnsmith/,+1-555-0001,https://a.com,https://b.com
-    https://www.linkedin.com/in/janedoe/,+1-555-0002,https://c.com,https://d.com
-    https://www.linkedin.com/in/mikejohnson/,+1-555-0003,https://e.com,https://f.com`;
+    https://www.linkedin.com/in/johnsmith/,+1-555-0001,"https://a.com,https://b.com"
+    https://www.linkedin.com/in/janedoe/,+1-555-0002,"https://c.com,https://d.com"
+    https://www.linkedin.com/in/mikejohnson/,+1-555-0003,"https://e.com,https://f.com"`;
+
 
 
     const downloadExample = () => {
@@ -712,12 +713,15 @@ const UploadPage: React.FC = () => {
                     <div>https://www.linkedin.com/in/mikejohnson/,+1-555-0003,https://e.com,https://f.com</div>
                   </div>
 
-                  {/* Download Example Button */}
-                  <div className="mt-3">
-                    <button onClick={downloadExample} style={{ marginLeft: "10px" }}>
+                  <div className="mb-6">
+                    <button 
+                      onClick={downloadExample}
+                      className="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
                       Download Example CSV
                     </button>
-                  </div>
+                   </div>
                   {/* Optional Note */}
                   {/* <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded">
                     <p className="text-xs text-amber-700">
