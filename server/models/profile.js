@@ -11,11 +11,12 @@ const profileSchema = new mongoose.Schema(
     seniorityLevel: String,
     skills: [String],
     education: String,
-    workExperience: String, // New field for detailed work experience
+    workExperience: String,
     email: String,
     phone: String,
     avatar: String,
-    // Remove global isUnlocked - now tracked per user in Dashboard
+    linkedinUrl: String,
+    extraLinks: [String],
     uploadedBy: String,
   },
   { timestamps: { createdAt: 'uploadedAt', updatedAt: 'updatedAt' } }
