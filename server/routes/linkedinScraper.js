@@ -25,7 +25,8 @@ router.post('/scrape-linkedin', async (req, res) => {
       profile.url && (profile.url.includes('linkedin.com/in/') || profile.url.includes('linkedin.com/pub/'))
     ).map(profile => ({
       url: profile.url.trim(),
-      phone: (profile.phone || '').trim()
+      phone: (profile.phone || '').trim(),
+      extraLinks: Array.isArray(profile.extraLinks) ? profile.extraLinks.filter(Boolean) : []
     }));
 
     if (validProfiles.length === 0) {
@@ -416,7 +417,8 @@ function transformLinkedInDataWithPhone(linkedInProfile, userId, profileInput) {
     avatar: linkedInProfile.pictureUrl || linkedInProfile.profilePicture || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
     uploadedBy: userId,
     companySize,
-    linkedinUrl: linkedInProfile.inputUrl || linkedInProfile.url || linkedInProfile.linkedinUrl || profileInput.url
+    linkedinUrl: linkedInProfile.inputUrl || linkedInProfile.url || linkedInProfile.linkedinUrl || profileInput.url,
+    extraLinks: profileInput.extraLinks || []
   };
 }
 

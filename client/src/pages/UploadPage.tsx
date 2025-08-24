@@ -37,7 +37,8 @@ const UploadPage: React.FC = () => {
   const [scrapingMode, setScrapingMode] = useState<'single' | 'bulk'>('single');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Simplified state for LinkedIn contact info - phone only
+  // Contact info for LinkedIn scraping
+  const [linkedinExtraLinks, setLinkedinExtraLinks] = useState('');
   const [linkedinPhone, setLinkedinPhone] = useState('');
 
   const [processingResults, setProcessingResults] = useState<{
@@ -167,7 +168,8 @@ const UploadPage: React.FC = () => {
           const columns = row.split(',').map(col => col.trim().replace(/"/g, ''));
           return {
             url: columns[urlIndex] || '',
-            phone: phoneIndex !== -1 ? columns[phoneIndex] || '' : ''
+            phone: phoneIndex !== -1 ? columns[phoneIndex] || '' : '',
+            extraLinks: linkedinExtraLinks ? linkedinExtraLinks.split(',').map(s => s.trim()).filter(Boolean) : []
           };
         }).filter(item => 
           item.url && (item.url.includes('linkedin.com/in/') || item.url.includes('linkedin.com/pub/'))
@@ -225,6 +227,7 @@ const UploadPage: React.FC = () => {
       // Reset form
       setLinkedinUrl('');
       setLinkedinPhone('');
+      setLinkedinExtraLinks('');
       setLinkedinFile(null);
 
     } catch (error) {
@@ -639,7 +642,22 @@ const UploadPage: React.FC = () => {
                       className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="+1-555-0123"
                     />
-                    
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Extra Links (comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={linkedinExtraLinks}
+                      onChange={(e) => setLinkedinExtraLinks(e.target.value)}
+                      className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="e.g., https://github.com/username, https://twitter.com/username"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Add any additional profile links separated by commas
+                    </p>
                   </div>
                 </div>
               ) : (
