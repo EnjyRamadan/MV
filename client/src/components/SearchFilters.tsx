@@ -263,7 +263,7 @@ const SearchFiltersComponent: React.FC<SearchFiltersProps> = ({
         </button>
         <button
           type="submit"
-          className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all"
+          className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-blue-700 transition-all"
         >
           Apply Filters
         </button>
