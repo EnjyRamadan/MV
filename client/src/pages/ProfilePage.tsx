@@ -20,6 +20,152 @@ import {
   Briefcase
 } from 'lucide-react';
 
+// Work Experience Parser and Display Component
+const WorkExperienceSection = ({ workExperience }: { workExperience: string }) => {
+  // Function to parse work experience string into structured data
+  const parseWorkExperience = (workExpString: string) => {
+    if (!workExpString) return [];
+    
+    const entries = workExpString.split('---').map(entry => entry.trim());
+    
+    return entries.map((entry, index) => {
+      // Match pattern: Title at Company (date - date) - Location
+      const match = entry.match(/^(.+?)\s+at\s+(.+?)\s+\((.+?)\)(?:\s+-\s+(.+?))?$/);
+      
+      if (match) {
+        const [, title, company, dateRange, location] = match;
+        const [startDate, endDate] = dateRange.split(' - ').map(d => d.trim());
+        
+        return {
+          id: index,
+          title: title.trim(),
+          company: company.trim(),
+          startDate: startDate,
+          endDate: endDate || 'Present',
+          location: location?.trim() || '',
+          current: endDate?.toLowerCase().includes('present') || !endDate
+        };
+      }
+      
+      // Fallback parsing for different formats
+      const parts = entry.split(' at ');
+      if (parts.length >= 2) {
+        return {
+          id: index,
+          title: parts[0].trim(),
+          company: parts.slice(1).join(' at ').trim(),
+          startDate: '',
+          endDate: '',
+          location: '',
+          current: false
+        };
+      }
+      
+      return {
+        id: index,
+        title: entry,
+        company: '',
+        startDate: '',
+        endDate: '',
+        location: '',
+        current: false
+      };
+    });
+  };
+
+  const workHistory = parseWorkExperience(workExperience);
+
+  if (workHistory.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center space-x-2 mb-6">
+        <Briefcase className="w-5 h-5 text-gray-600" />
+        <h2 className="text-xl font-semibold text-gray-900">Work Experience</h2>
+      </div>
+      
+      <div className="space-y-6">
+        {workHistory.map((job, index) => (
+          <div key={job.id} className="relative">
+            {/* Timeline connector */}
+            {index < workHistory.length - 1 && (
+              <div className="absolute left-4 top-8 w-0.5 h-16 bg-gray-200"></div>
+            )}
+            
+            <div className="flex items-start space-x-4">
+              {/* Timeline dot */}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                job.current 
+                  ? 'bg-green-100 border-2 border-green-500' 
+                  : 'bg-gray-100 border-2 border-gray-300'
+              }`}>
+                <div className={`w-3 h-3 rounded-full ${
+                  job.current ? 'bg-green-500' : 'bg-gray-400'
+                }`}></div>
+              </div>
+              
+              {/* Job details */}
+              <div className="flex-1 min-w-0">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {job.title}
+                  </h3>
+                  
+                  {job.company && (
+                    <div className="flex items-center space-x-2 text-blue-600 mb-2">
+                      <Building className="w-4 h-4" />
+                      <span className="font-medium">{job.company}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                    {(job.startDate || job.endDate) && (
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {job.startDate && job.endDate 
+                            ? `${job.startDate} - ${job.endDate}`
+                            : job.startDate || job.endDate
+                          }
+                        </span>
+                      </div>
+                    )}
+                    
+                    {job.location && (
+                      <div className="flex items-center space-x-1">
+                        <MapPin className="w-4 h-4" />
+                        <span>{job.location}</span>
+                      </div>
+                    )}
+                    
+                    {job.current && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Current Role
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Raw data fallback (optional - remove if not needed) */}
+      <details className="mt-6 text-sm">
+        <summary className="cursor-pointer text-gray-500 hover:text-gray-700">
+          View raw data
+        </summary>
+        <pre className="mt-2 p-3 bg-gray-50 rounded text-xs whitespace-pre-wrap text-gray-600">
+          {workExperience}
+        </pre>
+      </details>
+    </div>
+  );
+};
+
 const ProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -229,17 +375,9 @@ const ProfilePage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Skills, Work Experience & Details */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Work Experience */}
+          {/* Work Experience - Enhanced Version */}
           {contact.workExperience && (
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <div className="flex items-center space-x-2 mb-4">
-                <Briefcase className="w-5 h-5 text-gray-600" />
-                <h2 className="text-xl font-semibold text-gray-900">Work Experience</h2>
-              </div>
-              <div className="prose prose-sm max-w-none text-gray-700">
-                <p className="whitespace-pre-wrap">{contact.workExperience}</p>
-              </div>
-            </div>
+            <WorkExperienceSection workExperience={contact.workExperience} />
           )}
 
           {/* Skills */}
