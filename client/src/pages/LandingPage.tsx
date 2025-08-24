@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Search, Users, Zap, Shield, Mail, Phone } from 'lucide-react';
+import { Search, Users, Zap, Shield, Mail, Phone, ArrowRight} from 'lucide-react';
 import AuthModal from '../components/AuthModal';
 
 const LandingPage: React.FC = () => {
@@ -57,19 +57,33 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto text-center">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
-              Find the Right
+              Get Real Contacts for Free.
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent block">
-                Professionals
+                Share Your Professional Data, Unlock a World of Opportunities.
               </span>
               Instantly
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 mb-12 leading-relaxed">
-              The most advanced B2B contact search platform with AI-powered matching,
-              collaborative data sharing, and intelligent points system.
+              Join Thousands of professionals exchanging verified contacts daily. Earn points by sharing, unlock valuable leads for your business.
             </p>
           </div>
+                        <button
+                onClick={() => handleAuthClick('register')}
+                className="bg-gradient-to-r from-[#0b07f0] to-[#0b07f0] text-white px-8 py-4 rounded-xl font-semibold text-lg hover:scale-105 flex items-center space-x-2 shadow-md hover:shadow-lg transition-all"
+              >
+                <span>Start now to get free credits</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => handleAuthClick('login')}
+                className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-lg hover:border-gray-400 hover:bg-white transition-all duration-200"
+              >
+                Start exchanging for free
+              </button>
         </div>
       </section>
+
+      
 
       {/* Features Section */}
       <section className="py-20 bg-white/50 backdrop-blur-sm">
