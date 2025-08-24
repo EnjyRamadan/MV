@@ -157,6 +157,7 @@ const UploadPage: React.FC = () => {
         const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
         const urlIndex = headers.findIndex(h => h.includes('url'));
         const phoneIndex = headers.findIndex(h => h.includes('phone'));
+        const extraLinksIndex = headers.findIndex(h => h.includes('links'));
 
         if (urlIndex === -1) {
           toast.error('CSV file must have a "url" column');
@@ -166,20 +167,29 @@ const UploadPage: React.FC = () => {
         // Parse CSV data
         const dataRows = lines.slice(1); // Skip header row
         processedData = dataRows.map(row => {
-          const columns = row.split(',').map(col => col.trim().replace(/"/g, ''));
-          return {
-            url: columns[urlIndex] || '',
-            phone: phoneIndex !== -1 ? columns[phoneIndex] || '' : '',
-            extraLinks: linkedinExtraLinks ? linkedinExtraLinks.split(',').map(s => s.trim()).filter(Boolean) : []
-          };
-        }).filter(item => 
-          item.url && (item.url.includes('linkedin.com/in/') || item.url.includes('linkedin.com/pub/'))
-        );
+        const columns = row.split(',').map(col => col.trim().replace(/"/g, ''));
+
+        // get links column for this row
+        const linksRaw = extraLinksIndex !== -1 ? columns[extraLinksIndex] || '' : '';
+
+        return {
+          url: columns[urlIndex] || '',
+          phone: phoneIndex !== -1 ? columns[phoneIndex] || '' : '',
+          extraLinks: linksRaw
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean) // removes empty entries
+        };
+      }).filter(item => 
+        item.url && (item.url.includes('linkedin.com/in/') || item.url.includes('linkedin.com/pub/'))
+      );
+
 
         if (processedData.length === 0) {
           toast.error('No valid LinkedIn URLs found in the CSV file');
           return;
         }
+
       }
 
       // Initialize processing results
@@ -271,6 +281,22 @@ const UploadPage: React.FC = () => {
       }
     }
   };
+    const exampleCSV = `url,phone,links
+    https://www.linkedin.com/in/johnsmith/,+1-555-0001,https://a.com,https://b.com
+    https://www.linkedin.com/in/janedoe/,+1-555-0002,https://c.com,https://d.com
+    https://www.linkedin.com/in/mikejohnson/,+1-555-0003,https://e.com,https://f.com`;
+
+
+    const downloadExample = () => {
+      const blob = new Blob([exampleCSV], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "example.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -680,11 +706,19 @@ const UploadPage: React.FC = () => {
                   </p>
                   <div className="mt-2 p-3 bg-gray-50 rounded text-xs text-gray-600 font-mono">
                     <div className="font-semibold mb-1">CSV Format:</div>
-                    <div>url,phone</div>
-                    <div>https://www.linkedin.com/in/johnsmith/,+1-555-0001</div>
-                    <div>https://www.linkedin.com/in/janedoe/,+1-555-0002</div>
-                    <div>https://www.linkedin.com/in/mikejohnson/,+1-555-0003</div>
+                    <div>url,phone,links</div>
+                    <div>https://www.linkedin.com/in/johnsmith/,+1-555-0001,https://a.com,https://b.com</div>
+                    <div>https://www.linkedin.com/in/janedoe/,+1-555-0002,https://c.com,https://d.com</div>
+                    <div>https://www.linkedin.com/in/mikejohnson/,+1-555-0003,https://e.com,https://f.com</div>
                   </div>
+
+                  {/* Download Example Button */}
+                  <div className="mt-3">
+                    <button onClick={downloadExample} style={{ marginLeft: "10px" }}>
+                      Download Example CSV
+                    </button>
+                  </div>
+                  {/* Optional Note */}
                   {/* <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded">
                     <p className="text-xs text-amber-700">
                       <strong>Note:</strong> Phone column is optional but recommended. 
@@ -692,6 +726,7 @@ const UploadPage: React.FC = () => {
                     </p>
                   </div> */}
                 </div>
+
               )}
 
               <button
