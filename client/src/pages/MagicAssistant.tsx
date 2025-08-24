@@ -1,134 +1,99 @@
-import React, { useState, useEffect } from "react";
-import { Send, Bot, User, MessageSquare, BarChart3, Search, Heart, Upload, CreditCard } from "lucide-react";
+import React, { useState } from "react";
+import { Search, Filter, X } from "lucide-react";
 
-const MagicAssistant = () => {
-  const [typingDots, setTypingDots] = useState(0);
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTypingDots(prev => (prev + 1) % 4);
-    }, 500);
-    return () => clearInterval(interval);
-  }, []);
+const MagicAssistantSearch = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+
+  const handleGenerateFilters = () => {
+    setShowPopup(true);
+  };
+
+  const handleSearchWithAI = () => {
+    setShowPopup(true);
+  };
+
+  const closePopup = () => {
+    setShowPopup(false);
+  };
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Left Sidebar - Narrower */}
-      <div className="w-64 bg-gray-800 text-white flex flex-col">
-        <div className="p-4 space-y-2">
-          <div className="flex items-center gap-3 p-2 bg-gray-700 rounded-lg text-sm">
-            <MessageSquare className="w-4 h-4" />
-            <span>Magic Assistant Demo</span>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+      <div className="w-full max-w-4xl">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Magic Assistant
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Describe your ideal prospect in plain English, and let our AI do the heavy lifting.
+          </p>
+        </div>
+
+        {/* Search Box */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <div className="relative">
+            <textarea
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="e.g., 'CTOs in SaaS companies in Berlin with over 100 employees and using AWS'"
+              className="w-full min-h-[120px] p-6 text-gray-700 placeholder-gray-400 border border-gray-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base leading-relaxed"
+              style={{ fontSize: '16px' }}
+            />
           </div>
-          <div className="flex items-center gap-3 p-2 text-gray-400 hover:bg-gray-700 rounded-lg text-sm cursor-pointer">
-            <MessageSquare className="w-4 h-4" />
-            <span>Previous chat example</span>
-          </div>
-          <div className="flex items-center gap-3 p-2 text-gray-400 hover:bg-gray-700 rounded-lg text-sm cursor-pointer">
-            <MessageSquare className="w-4 h-4" />
-            <span>Another conversation</span>
+          
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3 mt-6">
+            <button
+              onClick={handleGenerateFilters}
+              className="px-6 py-3 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              Generate Filters
+            </button>
+            <button
+              onClick={handleSearchWithAI}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2"
+            >
+              <Search className="w-4 h-4" />
+              Search with AI
+            </button>
           </div>
         </div>
-        
-        <div className="flex-1"></div>
-        
-        <div className="p-4 border-t border-gray-700">
-          <div className="flex items-center gap-3 text-sm">
-            <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
-              <User className="w-3 h-3 text-white" />
-            </div>
-            <span>User Account</span>
-          </div>
+
+        {/* Optional: Add some visual interest with subtle features */}
+        <div className="text-center text-gray-500 text-sm">
+          <p>Powered by advanced AI to find your perfect prospects</p>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Chat Area */}
-        <div className="flex-1 overflow-y-auto bg-white">
-          <div className="max-w-4xl mx-auto px-6 py-8">
+      {/* Coming Soon Popup */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-xl p-8 max-w-sm w-full mx-auto relative">
+            <button
+              onClick={closePopup}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
             
-            {/* Assistant Message */}
-            <div className="flex gap-4 mb-8">
-              <div className="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search className="w-8 h-8 text-blue-600" />
               </div>
-              <div className="flex-1 pt-2">
-                <div className="bg-gray-50 rounded-2xl rounded-tl-md p-4 max-w-3xl">
-                  <p className="text-gray-800 leading-relaxed">
-                    Hello! I'm Magic Assistant — your AI-powered helper. I specialize in helping you discover and connect with the best candidates for your job openings, making hiring faster, easier, and more effective.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* User Message */}
-            <div className="flex gap-4 mb-8">
-              <div className="flex-shrink-0 w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 pt-2">
-                <div className="bg-blue-50 rounded-2xl rounded-tl-md p-4 max-w-3xl">
-                  <p className="text-gray-800 leading-relaxed">
-                    This looks great! When will you be fully available for conversations?
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Typing Indicator */}
-            <div className="flex gap-4 mb-8">
-              <div className="flex-shrink-0 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex-1 pt-2">
-                <div className="bg-gray-50 rounded-2xl rounded-tl-md p-4 w-20">
-                  <div className="flex gap-1">
-                    <div className={`w-2 h-2 bg-gray-400 rounded-full ${typingDots >= 1 ? 'animate-bounce' : 'opacity-40'}`}></div>
-                    <div className={`w-2 h-2 bg-gray-400 rounded-full ${typingDots >= 2 ? 'animate-bounce' : 'opacity-40'} delay-100`}></div>
-                    <div className={`w-2 h-2 bg-gray-400 rounded-full ${typingDots >= 3 ? 'animate-bounce' : 'opacity-40'} delay-200`}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Coming Soon Card */}
-            <div className="flex justify-center mb-8">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-8 text-center max-w-md">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Bot className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="font-semibold text-blue-900 text-lg mb-3">Coming Soon</h3>
-                <p className="text-blue-700 text-sm leading-relaxed">
-                  Magic Assistant is currently in development. We're working hard to bring you an amazing AI chat experience.
-                </p>
-              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Coming Soon!
+              </h3>
+              <p className="text-gray-600 text-sm">
+                We're working hard to bring you this amazing feature. Stay tuned!
+              </p>
             </div>
           </div>
         </div>
-
-        {/* Input Area */}
-        <div className="bg-white border-t border-gray-200 px-6 py-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Message Magic Assistant..."
-                disabled
-                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
-              />
-              <button
-                disabled
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 p-2 text-gray-400 cursor-not-allowed"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </div>
   );
 };
 
-export default MagicAssistant;
+export default MagicAssistantSearch;
