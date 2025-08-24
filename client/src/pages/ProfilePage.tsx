@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 
 // Work Experience Parser and Display Component
+// Work Experience Parser and Display Component
 const WorkExperienceSection = ({ workExperience }: { workExperience: string }) => {
   // Function to parse work experience string into structured data
   const parseWorkExperience = (workExpString: string) => {
@@ -30,7 +31,12 @@ const WorkExperienceSection = ({ workExperience }: { workExperience: string }) =
     
     return entries.map((entry, index) => {
       // Match pattern: Title at Company (date - date) - Location
-      const match = entry.match(/^(.+?)\s+at\s+(.+?)\s+\((.+?)\)(?:\s+-\s+(.+?))?$/);
+      // Also try to extract description if it's on separate lines
+      const lines = entry.split('\n').map(line => line.trim()).filter(line => line);
+      const mainLine = lines[0] || entry;
+      const description = lines.slice(1).join('\n').trim();
+      
+      const match = mainLine.match(/^(.+?)\s+at\s+(.+?)\s+\((.+?)\)(?:\s+-\s+(.+?))?$/);
       
       if (match) {
         const [, title, company, dateRange, location] = match;
@@ -43,12 +49,13 @@ const WorkExperienceSection = ({ workExperience }: { workExperience: string }) =
           startDate: startDate,
           endDate: endDate || 'Present',
           location: location?.trim() || '',
+          description: description || '',
           current: endDate?.toLowerCase().includes('present') || !endDate
         };
       }
       
       // Fallback parsing for different formats
-      const parts = entry.split(' at ');
+      const parts = mainLine.split(' at ');
       if (parts.length >= 2) {
         return {
           id: index,
@@ -57,6 +64,7 @@ const WorkExperienceSection = ({ workExperience }: { workExperience: string }) =
           startDate: '',
           endDate: '',
           location: '',
+          description: description || '',
           current: false
         };
       }
@@ -68,6 +76,7 @@ const WorkExperienceSection = ({ workExperience }: { workExperience: string }) =
         startDate: '',
         endDate: '',
         location: '',
+        description: '',
         current: false
       };
     });
@@ -91,12 +100,12 @@ const WorkExperienceSection = ({ workExperience }: { workExperience: string }) =
           <div key={job.id} className="relative">
             {/* Timeline connector */}
             {index < workHistory.length - 1 && (
-              <div className="absolute left-4 top-8 w-0.5 h-16 bg-gray-200"></div>
+              <div className="absolute left-4 top-12 w-0.5 h-full bg-gray-200"></div>
             )}
             
             <div className="flex items-start space-x-4">
               {/* Timeline dot */}
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${
                 job.current 
                   ? 'bg-green-100 border-2 border-green-500' 
                   : 'bg-gray-100 border-2 border-gray-300'
@@ -108,45 +117,61 @@ const WorkExperienceSection = ({ workExperience }: { workExperience: string }) =
               
               {/* Job details */}
               <div className="flex-1 min-w-0">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                    {job.title}
-                  </h3>
-                  
-                  {job.company && (
-                    <div className="flex items-center space-x-2 text-blue-600 mb-2">
-                      <Building className="w-4 h-4" />
-                      <span className="font-medium">{job.company}</span>
+                {/* Job Title */}
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                  {job.title}
+                </h3>
+                
+                {/* Company Name - Bold and Prominent */}
+                {job.company && (
+                  <div className="mb-3">
+                    <span className="text-lg font-bold text-blue-700">
+                      {job.company}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Metadata Section */}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                  {(job.startDate || job.endDate) && (
+                    <div className="flex items-center space-x-1">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {job.startDate && job.endDate 
+                          ? `${job.startDate} - ${job.endDate}`
+                          : job.startDate || job.endDate
+                        }
+                      </span>
                     </div>
                   )}
                   
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                    {(job.startDate || job.endDate) && (
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="w-4 h-4" />
-                        <span>
-                          {job.startDate && job.endDate 
-                            ? `${job.startDate} - ${job.endDate}`
-                            : job.startDate || job.endDate
-                          }
-                        </span>
-                      </div>
-                    )}
-                    
-                    {job.location && (
-                      <div className="flex items-center space-x-1">
-                        <MapPin className="w-4 h-4" />
-                        <span>{job.location}</span>
-                      </div>
-                    )}
-                    
-                    {job.current && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Current Role
-                      </span>
-                    )}
-                  </div>
+                  {job.location && (
+                    <div className="flex items-center space-x-1">
+                      <MapPin className="w-4 h-4" />
+                      <span>{job.location}</span>
+                    </div>
+                  )}
+                  
+                  {job.current && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Current Role
+                    </span>
+                  )}
                 </div>
+                
+                {/* Description Section - Separate from metadata */}
+                {job.description && (
+                  <div className="bg-gray-50 rounded-lg p-4 mt-3">
+                    <div className="text-gray-700 whitespace-pre-wrap">
+                      {job.description}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Divider between jobs */}
+                {index < workHistory.length - 1 && (
+                  <hr className="mt-6 border-gray-200" />
+                )}
               </div>
             </div>
           </div>
