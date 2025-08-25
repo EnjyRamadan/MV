@@ -196,7 +196,7 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { dashboard, updatePoints } = useDashboard();
-  const { unlockContact } = useContacts();
+  const { unlockContact, refreshContacts } = useContacts();
   
   const [contact, setContact] = useState<Contact | null>(null);
   const [loading, setLoading] = useState(true);
@@ -287,8 +287,11 @@ const ProfilePage: React.FC = () => {
 
       const result = await response.json();
       
-      // Update dashboard points with exact value from backend
-      updatePoints(result.remainingPoints);
+      // Update points and refresh data
+      await Promise.all([
+        updatePoints(result.remainingPoints),
+        refreshContacts()
+      ]);
       
       // Update contact unlock status locally
       setContact(prev => prev ? { ...prev, isUnlocked: true } : null);

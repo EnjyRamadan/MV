@@ -7,7 +7,7 @@ import toast, { Toaster } from 'react-hot-toast';
 
 const UploadPage: React.FC = () => {
   const { user } = useAuth();
-  const { addContact } = useContacts();
+  const { addContact, refreshContacts } = useContacts();
   const { dashboard, refreshDashboard } = useDashboard();
 
   const [activeTab, setActiveTab] = useState<'single' | 'linkedin'>('linkedin');
@@ -92,7 +92,10 @@ const UploadPage: React.FC = () => {
       if (!res.ok) throw new Error('Failed to save contact');
       const savedContact = await res.json();
 
-      await refreshDashboard();
+      await Promise.all([
+        refreshDashboard(),
+        refreshContacts()
+      ]);
 
       toast.success('Contact uploaded successfully! +10 points');
 
@@ -228,8 +231,11 @@ const UploadPage: React.FC = () => {
       // Update processing results with final data
       setProcessingResults(result.results);
 
-      // Refresh dashboard to update points
-      await refreshDashboard();
+      // Refresh dashboard and contacts
+      await Promise.all([
+        refreshDashboard(),
+        refreshContacts()
+      ]);
 
       // Show success/failure messages
       if (result.results.successful > 0) {
