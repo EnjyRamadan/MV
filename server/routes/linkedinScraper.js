@@ -20,15 +20,48 @@ router.post('/scrape-linkedin', async (req, res) => {
       });
     }
 
-    // Validate and structure profile data
-    const validProfiles = profilesData.filter(profile => 
-      profile.url && (profile.url.includes('linkedin.com/in/') || profile.url.includes('linkedin.com/pub/'))
-    ).map(profile => ({
-      url: profile.url.trim(),
-      phone: (profile.phone || '').trim(),
-      email: (profile.email || '').trim(),
-      extraLinks: Array.isArray(profile.extraLinks) ? profile.extraLinks.filter(Boolean) : []
-    }));
+    // Extract LinkedIn identifier function
+    function extractLinkedInId(url) {
+      if (!url) return null;
+      const match = url.match(/linkedin\.com\/in\/([^/?]+)/);
+      return match ? match[1].toLowerCase() : null;
+    }
+
+    // Check for duplicates before processing
+    const urlsToProcess = [];
+    const duplicates = [];
+
+    for (const profile of profilesData) {
+      if (!profile.url || (!profile.url.includes('linkedin.com/in/') && !profile.url.includes('linkedin.com/pub/'))) {
+        continue;
+      }
+
+      const linkedinId = extractLinkedInId(profile.url);
+      if (!linkedinId) continue;
+
+      try {
+        // Check if a profile with this LinkedIn ID already exists
+        const existingProfile = await mongoose.model('Profile').findOne({ linkedinId });
+        
+        if (existingProfile) {
+          duplicates.push({
+            url: profile.url,
+            message: 'Profile already exists in the database'
+          });
+        } else {
+          urlsToProcess.push({
+            url: profile.url.trim(),
+            phone: (profile.phone || '').trim(),
+            email: (profile.email || '').trim(),
+            extraLinks: Array.isArray(profile.extraLinks) ? profile.extraLinks.filter(Boolean) : []
+          });
+        }
+      } catch (error) {
+        console.error('Error checking for duplicate:', error);
+      }
+    }
+
+    const validProfiles = urlsToProcess;
 
     if (validProfiles.length === 0) {
       return res.status(400).json({ 
@@ -200,11 +233,23 @@ router.post('/scrape-linkedin', async (req, res) => {
       }
     }
 
+    // Add duplicates to results
+    duplicates.forEach(duplicate => {
+      results.processed++;
+      results.failed++;
+      results.results.push({
+        url: duplicate.url,
+        status: 'failed',
+        error: duplicate.message
+      });
+    });
+
     // Return results
     res.json({
       success: true,
       results,
-      pointsEarned: results.successful * 10
+      pointsEarned: results.successful * 10,
+      duplicates: duplicates.length > 0 ? duplicates : undefined
     });
 
   } catch (error) {

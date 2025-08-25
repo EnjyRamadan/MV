@@ -1,6 +1,7 @@
 const express = require('express');
 const Profile = require('../models/profile.js');
 const Dashboard = require('../models/Dashboard');
+const { checkLinkedInDuplicate } = require('../utils/linkedinHelper');
 
 const router = express.Router();
 
@@ -132,6 +133,17 @@ router.post('/:id/unlock', async (req, res) => {
 // POST new profile with dashboard update
 router.post('/', async (req, res) => {
   try {
+    // Check for LinkedIn URL duplicate
+    if (req.body.linkedinUrl) {
+      const duplicate = await checkLinkedInDuplicate(req.body.linkedinUrl, Profile);
+      if (duplicate) {
+        return res.status(409).json({
+          error: 'Duplicate LinkedIn profile',
+          message: duplicate.message
+        });
+      }
+    }
+
     // Create the profile (no global isUnlocked field)
     const profile = await Profile.create(req.body);
 

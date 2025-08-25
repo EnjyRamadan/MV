@@ -89,7 +89,13 @@ const UploadPage: React.FC = () => {
         body: JSON.stringify(contact)
       });
 
-      if (!res.ok) throw new Error('Failed to save contact');
+      if (!res.ok) {
+        const errorData = await res.json();
+        if (res.status === 409) {
+          throw new Error('We already have this account!');
+        }
+        throw new Error(errorData.message || 'Failed to save contact');
+      }
       const savedContact = await res.json();
 
       await Promise.all([
@@ -241,7 +247,14 @@ const UploadPage: React.FC = () => {
       if (result.results.successful > 0) {
         toast.success(`Successfully processed ${result.results.successful} profiles! +${result.pointsEarned} points`);
       }
-      if (result.results.failed > 0) {
+      if (result.duplicates && result.duplicates.length > 0) {
+        // Show toast for duplicates
+        if (result.duplicates.length === 1) {
+          toast.error('We already have this account!');
+        } else {
+          toast.error(`${result.duplicates.length} profiles already exist in our database!`);
+        }
+      } else if (result.results.failed > 0) {
         toast.error(`Failed to process ${result.results.failed} profiles`);
       }
 
@@ -855,7 +868,9 @@ const UploadPage: React.FC = () => {
                               </p>
                             ) : (
                               <p className="text-sm text-red-700">
-                                ✗ {result.error || 'Failed to scrape profile'}
+                                ✗ {result.error === 'Profile already exists in the database' 
+                                    ? 'We already have this account!' 
+                                    : (result.error || 'Failed to scrape profile')}
                               </p>
                             )}
                           </div>
