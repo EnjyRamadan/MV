@@ -143,14 +143,21 @@ const UploadPage: React.FC = () => {
           toast.error('Please enter a LinkedIn URL');
           return;
         }
-        // Ensure URL has https:// prefix
+        // Ensure URL has https:// prefix and www.
         let formattedUrl = linkedinUrl.trim();
-        if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
-          formattedUrl = 'https://' + formattedUrl;
-        }
-        if (!formattedUrl.startsWith('https://www.')) {
-          formattedUrl = formattedUrl.replace('https://', 'https://www.');
-        }
+        
+        // Remove any existing protocol
+        formattedUrl = formattedUrl.replace(/^https?:\/\//, '');
+        
+        // Remove any existing www.
+        formattedUrl = formattedUrl.replace(/^www\./, '');
+        
+        // Add https://www.
+        formattedUrl = 'https://www.' + formattedUrl;
+        
+        // Debug URL formatting
+        console.log('Original URL:', linkedinUrl);
+        console.log('Formatted URL:', formattedUrl);
         
         processedData = [{
           url: formattedUrl,
@@ -224,11 +231,15 @@ const UploadPage: React.FC = () => {
       };
       setProcessingResults(initialResults);
 
+      // Debug the URL being sent
+      console.log('Sending profiles for processing:', processedData);
+      
       // Call backend API for LinkedIn scraping with phone info
       const response = await fetch('https://contactpro-backend.vercel.app/api/scrape-linkedin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
           profilesData: processedData,
