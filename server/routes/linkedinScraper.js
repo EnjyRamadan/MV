@@ -23,21 +23,48 @@ router.post('/scrape-linkedin', async (req, res) => {
     // Extract LinkedIn identifier function
     function extractLinkedInId(url) {
       if (!url) return null;
-      const match = url.match(/linkedin\.com\/in\/([^/?]+)/);
-      return match ? match[1].toLowerCase() : null;
+      
+      // Remove any trailing slash before matching
+      const cleanUrl = url.replace(/\/$/, '');
+      console.log('Cleaning URL for extraction:', cleanUrl);
+      
+      // Updated regex to be more permissive with special characters
+      const match = cleanUrl.match(/linkedin\.com\/in\/([\w\-%.]+)/);
+      
+      if (match) {
+        const id = match[1].toLowerCase();
+        console.log('Successfully extracted LinkedIn ID:', id);
+        return id;
+      }
+      
+      console.log('Failed to extract LinkedIn ID from URL:', cleanUrl);
+      return null;
     }
 
     // Check for duplicates before processing
     const urlsToProcess = [];
     const duplicates = [];
 
+    console.log('Received profilesData:', profilesData);
+
     for (const profile of profilesData) {
-      if (!profile.url || (!profile.url.includes('linkedin.com/in/') && !profile.url.includes('linkedin.com/pub/'))) {
+      console.log('Processing profile URL:', profile.url);
+      
+      // Normalize the URL by removing trailing slash
+      const normalizedUrl = profile.url ? profile.url.replace(/\/$/, '') : '';
+      
+      if (!normalizedUrl || (!normalizedUrl.includes('linkedin.com/in/') && !normalizedUrl.includes('linkedin.com/pub/'))) {
+        console.log('Invalid URL format:', normalizedUrl);
         continue;
       }
 
-      const linkedinId = extractLinkedInId(profile.url);
-      if (!linkedinId) continue;
+      const linkedinId = extractLinkedInId(normalizedUrl);
+      console.log('Extracted LinkedIn ID:', linkedinId);
+      
+      if (!linkedinId) {
+        console.log('Could not extract LinkedIn ID from URL:', normalizedUrl);
+        continue;
+      }
 
       try {
         // Check if a profile with this LinkedIn ID already exists
@@ -64,9 +91,19 @@ router.post('/scrape-linkedin', async (req, res) => {
     const validProfiles = urlsToProcess;
 
     if (validProfiles.length === 0) {
-      return res.status(400).json({ 
-        error: 'No valid LinkedIn URLs found' 
-      });
+      const error = {
+        error: 'No valid LinkedIn URLs found',
+        details: {
+          receivedUrls: profilesData.map(p => p.url),
+          validationErrors: profilesData.map(p => ({
+            url: p.url,
+            isValid: p.url && (p.url.includes('linkedin.com/in/') || p.url.includes('linkedin.com/pub/')),
+            hasLinkedinId: extractLinkedInId(p.url) !== null
+          }))
+        }
+      };
+      console.log('Validation failed:', error);
+      return res.status(400).json(error);
     }
 
     const apiToken = process.env.APIFY_API_KEY;
