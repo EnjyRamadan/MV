@@ -143,8 +143,17 @@ const UploadPage: React.FC = () => {
           toast.error('Please enter a LinkedIn URL');
           return;
         }
+        // Ensure URL has https:// prefix
+        let formattedUrl = linkedinUrl.trim();
+        if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+          formattedUrl = 'https://' + formattedUrl;
+        }
+        if (!formattedUrl.startsWith('https://www.')) {
+          formattedUrl = formattedUrl.replace('https://', 'https://www.');
+        }
+        
         processedData = [{
-          url: linkedinUrl.trim(),
+          url: formattedUrl,
           phone: linkedinPhone.trim(),
           email: linkedinEmail.trim(),
           extraLinks: linkedinExtraLinks ? linkedinExtraLinks.split(',').map(s => s.trim()).filter(Boolean) : []
