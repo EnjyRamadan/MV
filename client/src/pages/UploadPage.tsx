@@ -40,6 +40,7 @@ const UploadPage: React.FC = () => {
   // Contact info for LinkedIn scraping
   const [linkedinExtraLinks, setLinkedinExtraLinks] = useState('');
   const [linkedinPhone, setLinkedinPhone] = useState('');
+  const [linkedinEmail, setLinkedinEmail] = useState('');
 
   const [processingResults, setProcessingResults] = useState<{
     total: number;
@@ -125,7 +126,7 @@ const UploadPage: React.FC = () => {
     setIsProcessing(true);
     setProcessingResults(null);
 
-    let processedData: Array<{ url: string; phone?: string; extraLinks?: string[] }> = [];
+    let processedData: Array<{ url: string; phone?: string; email: string;extraLinks?: string[] }> = [];
 
     try {
       if (scrapingMode === 'single') {
@@ -136,6 +137,7 @@ const UploadPage: React.FC = () => {
         processedData = [{
           url: linkedinUrl.trim(),
           phone: linkedinPhone.trim(),
+          email: linkedinEmail.trim(),
           extraLinks: linkedinExtraLinks ? linkedinExtraLinks.split(',').map(s => s.trim()).filter(Boolean) : []
         }];
       } else {
@@ -157,6 +159,7 @@ const UploadPage: React.FC = () => {
         const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
         const urlIndex = headers.findIndex(h => h.includes('url'));
         const phoneIndex = headers.findIndex(h => h.includes('phone'));
+        const emailIndex = headers.findIndex(h => h.includes('email'));
         const extraLinksIndex = headers.findIndex(h => h.includes('links'));
 
         if (urlIndex === -1) {
@@ -175,6 +178,7 @@ const UploadPage: React.FC = () => {
         return {
           url: columns[urlIndex] || '',
           phone: phoneIndex !== -1 ? columns[phoneIndex] || '' : '',
+          email: emailIndex !== -1 ? columns[emailIndex] || '' : '',
           extraLinks: linksRaw
             .split(',')
             .map(s => s.trim())
@@ -238,6 +242,7 @@ const UploadPage: React.FC = () => {
       // Reset form
       setLinkedinUrl('');
       setLinkedinPhone('');
+      setLinkedinEmail('');
       setLinkedinExtraLinks('');
       setLinkedinFile(null);
 
@@ -281,10 +286,10 @@ const UploadPage: React.FC = () => {
       }
     }
   };
-    const exampleCSV = `url,phone,links
-    https://www.linkedin.com/in/johnsmith/,+1-555-0001,"https://a.com,https://b.com"
-    https://www.linkedin.com/in/janedoe/,+1-555-0002,"https://c.com,https://d.com"
-    https://www.linkedin.com/in/mikejohnson/,+1-555-0003,"https://e.com,https://f.com"`;
+    const exampleCSV = `url,phone,email,links
+    https://www.linkedin.com/in/johnsmith/,+1-555-0001,john@example.com,"https://a.com,https://b.com"
+    https://www.linkedin.com/in/janedoe/,+1-555-0002,jane@example.com,"https://c.com,https://d.com"
+    https://www.linkedin.com/in/mikejohnson/,+1-555-0003,mike@example.com,"https://e.com,https://f.com"`;
 
 
 
@@ -669,6 +674,19 @@ const UploadPage: React.FC = () => {
                       required
                       className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       placeholder="+1-555-0123"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={linkedinEmail}
+                      onChange={(e) => setLinkedinEmail(e.target.value)}
+                      className="w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="contact@email.com"
                     />
                   </div>
 

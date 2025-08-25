@@ -26,6 +26,7 @@ router.post('/scrape-linkedin', async (req, res) => {
     ).map(profile => ({
       url: profile.url.trim(),
       phone: (profile.phone || '').trim(),
+      email: (profile.email || '').trim(),
       extraLinks: Array.isArray(profile.extraLinks) ? profile.extraLinks.filter(Boolean) : []
     }));
 
@@ -415,7 +416,7 @@ function transformLinkedInDataWithPhone(linkedInProfile, userId, profileInput) {
     skills,
     education,
     workExperience,
-    email: linkedInProfile.email || '', // Use LinkedIn email if available
+    email: profileInput.email || linkedInProfile.email || '', // Prioritize user-provided email
     phone: finalPhone, // Prioritize user-provided phone
     avatar: linkedInProfile.pictureUrl || linkedInProfile.profilePicture || 'https://images.pexels.com/photos/771742/pexels-photo-771742.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
     uploadedBy: userId,
