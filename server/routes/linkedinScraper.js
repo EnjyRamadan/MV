@@ -20,91 +20,19 @@ router.post('/scrape-linkedin', async (req, res) => {
       });
     }
 
-    // Extract LinkedIn identifier function
-    function extractLinkedInId(url) {
-      if (!url) return null;
-      const cleanUrl = url.replace(/[?#].*$/, '').replace(/\/$/, '');
-      const match = cleanUrl.match(/linkedin\.com\/in\/([a-zA-Z0-9\-_.%]+)/);
-      return match ? match[1].toLowerCase() : null;
-    }
+    // Validate and structure profile data
+    const validProfiles = profilesData.filter(profile => 
+      profile.url && (profile.url.includes('linkedin.com/in/') || profile.url.includes('linkedin.com/pub/'))
+    ).map(profile => ({
+      url: profile.url.trim(),
+      phone: (profile.phone || '').trim(),
+      email: (profile.email || '').trim(),
+      extraLinks: Array.isArray(profile.extraLinks) ? profile.extraLinks.filter(Boolean) : []
+    }));
 
-    // First, validate URLs and check for duplicates
-    const validationResults = [];
-    const validProfiles = [];
-    const duplicates = [];
-
-    for (const profile of profilesData) {
-      const normalizedUrl = profile.url ? profile.url.trim() : '';
-      
-      // Check URL format
-      if (!normalizedUrl || (!normalizedUrl.includes('linkedin.com/in/') && !normalizedUrl.includes('linkedin.com/pub/'))) {
-        validationResults.push({
-          url: normalizedUrl,
-          status: 'invalid_format',
-          message: 'Invalid LinkedIn URL format'
-        });
-        continue;
-      }
-
-      // Extract LinkedIn ID
-      const linkedinId = extractLinkedInId(normalizedUrl);
-      if (!linkedinId) {
-        validationResults.push({
-          url: normalizedUrl,
-          status: 'invalid_id',
-          message: 'Could not extract LinkedIn ID from URL'
-        });
-        continue;
-      }
-
-      try {
-        // Check for duplicates in the database
-        const existingProfile = await mongoose.model('Profile').findOne({ linkedinId });
-        
-        if (existingProfile) {
-          duplicates.push({
-            url: normalizedUrl,
-            linkedinId,
-            message: 'Profile already exists in the database'
-          });
-          validationResults.push({
-            url: normalizedUrl,
-            status: 'duplicate',
-            message: 'Profile already exists in the database'
-          });
-          continue;
-        }
-
-        // If all checks pass, add to valid profiles
-        validProfiles.push({
-          url: normalizedUrl,
-          linkedinId,
-          phone: (profile.phone || '').trim(),
-          email: (profile.email || '').trim(),
-          extraLinks: Array.isArray(profile.extraLinks) ? profile.extraLinks.filter(Boolean) : []
-        });
-
-        validationResults.push({
-          url: normalizedUrl,
-          status: 'valid',
-          message: 'URL validated successfully'
-        });
-      } catch (error) {
-        console.error('Error checking for duplicate:', error);
-        validationResults.push({
-          url: normalizedUrl,
-          status: 'error',
-          message: 'Error checking profile existence'
-        });
-      }
-    }
-
-    // If no valid profiles found, return validation results
     if (validProfiles.length === 0) {
-      return res.status(400).json({
-        error: 'No valid LinkedIn URLs to process',
-        validationResults,
-        duplicates
+      return res.status(400).json({ 
+        error: 'No valid LinkedIn URLs found' 
       });
     }
 
