@@ -1,7 +1,11 @@
+// linkedinHelper.js - Improved version that explicitly handles URL parameters
 // Helper function to extract LinkedIn identifier from URL
 function extractLinkedInId(url) {
   if (!url) return null;
-  const match = url.match(/linkedin\.com\/in\/([^/?]+)/);
+  
+  // IMPROVED: Updated regex to explicitly handle URL parameters and trailing content
+  // This regex stops at ?, /, or end of string after capturing the profile ID
+  const match = url.match(/linkedin\.com\/in\/([\w\-%.0-9]+)(?:[/?]|$)/i);
   return match ? match[1].toLowerCase() : null;
 }
 
