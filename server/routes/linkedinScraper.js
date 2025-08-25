@@ -1,4 +1,4 @@
-// routes/linkedinScraper.js - Updated to handle phone information only
+// routes/linkedinScraper.js - Fixed regex pattern
 const express = require('express');
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.post('/scrape-linkedin', async (req, res) => {
       });
     }
 
-    // Extract LinkedIn identifier function
+    // FIXED: Extract LinkedIn identifier function with better regex
     function extractLinkedInId(url) {
       if (!url) return null;
       
@@ -28,8 +28,9 @@ router.post('/scrape-linkedin', async (req, res) => {
       const cleanUrl = url.replace(/\/$/, '');
       console.log('Cleaning URL for extraction:', cleanUrl);
       
-      // Updated regex to be more permissive with special characters
-      const match = cleanUrl.match(/linkedin\.com\/in\/([\w\-%.]+)/);
+      // FIXED: Updated regex to properly handle hyphens, numbers, and special characters
+      // This regex allows: letters, numbers, hyphens, underscores, periods, and percent-encoded characters
+      const match = cleanUrl.match(/linkedin\.com\/in\/([\w\-%.0-9]+)/i);
       
       if (match) {
         const id = match[1].toLowerCase();
