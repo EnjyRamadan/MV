@@ -19,7 +19,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      'https://contactpro-hrmanager.vercel.app'
+      'https://contactpro-hrmanager.vercel.app',
+      'https://dalilyai.com'
     ];
     
     if (process.env.FRONTEND_URL) {
