@@ -176,7 +176,7 @@ const LandingPage: React.FC = () => {
                   <div>
                     <p className="font-medium">Email Us</p>
                     <a href="mailto:support@contactpro.com" className="text-blue-400 hover:text-blue-300 transition-colors">
-                      zein@dalilyai.com
+                      info@talentnavigator.net
                     </a>
                   </div>
                 </div>
@@ -188,7 +188,7 @@ const LandingPage: React.FC = () => {
                   <div>
                     <p className="font-medium">Call Us</p>
                     <a href="tel:+1-555-0123" className="text-green-400 hover:text-green-300 transition-colors">
-                      +20 11 16114347
+                      +201030252979
                     </a>
                   </div>
                 </div>
