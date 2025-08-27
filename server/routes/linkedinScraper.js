@@ -132,6 +132,23 @@ router.post('/scrape-linkedin', async (req, res) => {
           // Transform LinkedIn data to our contact format, including user-provided phone info
           const contactData = transformLinkedInDataWithPhone(profileData, userId, profileInput);
 
+          // Check if profile has sufficient data
+          const hasMinimumData = contactData.name && // Has a name
+                                (contactData.experience > 0 || // Has experience
+                                 contactData.company || // Or has a company
+                                 contactData.jobTitle); // Or has a job title
+
+          if (!hasMinimumData) {
+            console.log('Profile skipped due to insufficient data:', {
+              url: profileInput.url,
+              name: contactData.name,
+              experience: contactData.experience,
+              company: contactData.company,
+              jobTitle: contactData.jobTitle
+            });
+            throw new Error('Insufficient profile data - profile must have a name and either experience, company, or job title');
+          }
+
           // Save contact using the existing profiles API endpoint
           const saveResponse = await fetch(`${process.env.BASE_URL || 'https://contactpro-backend.vercel.app'}/profiles`, {
             method: 'POST',
